@@ -1,0 +1,13 @@
+{
+  "name": "Ragnavik_UI",
+  "version_number": "1.0.2",
+  "website_url": "https://ragnavik.vercel.app",
+  "description": "Client UI fixes for Ragnavik: aligned inventory controls and a working trash drop target.",
+  "dependencies": [
+    "denikson-BepInExPack_Valheim-5.4.2350",
+    "Azumatt-AzuClock-1.1.0",
+    "Neobotics-HUDCompass-1.2.0",
+    "Azumatt-CurrencyPocket-1.0.13",
+    "virtuaCode-TrashItems-1.2.8"
+  ]
+}

@@ -1,0 +1,5 @@
+artifacts/
+src/bin/
+src/obj/
+*.user
+*.zip
