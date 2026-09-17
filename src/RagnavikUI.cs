@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace RagnavikUI;
 
-[BepInPlugin("lostkode.ragnavik.ui", "Ragnavik UI", "1.0.2")]
+[BepInPlugin("lostkode.ragnavik.ui", "Ragnavik UI", "1.0.3")]
 public sealed class RagnavikUIPlugin : BaseUnityPlugin
 {
     private static ManualLogSource? uiLog;

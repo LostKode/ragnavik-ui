@@ -2,7 +2,7 @@
 
 Ragnavik UI is a client only BepInEx plugin for the Ragnavik Valheim modpack. It layers layout fixes over AzuClock, HUDCompass, CurrencyPocket, and TrashItems. It does not replace those dependency mods or provide their features.
 
-Version 1.0.2 arranges armor, gold, weight, and trash controls in four measured rows beside the inventory. It also keeps the visible trash panel aligned with TrashItems' interactive drop target.
+Version 1.0.3 restores the established version table changelog format. UI behavior and dependencies are unchanged.
 
 ## Install
 
@@ -28,7 +28,7 @@ BEPINEX_CORE_DIR=/path/to/BepInEx/core \
 ./scripts/package.sh
 ```
 
-The deterministic archive is written to `artifacts/LostKode-Ragnavik_UI-1.0.2.zip`. Repeated packaging from identical source and tool inputs produces identical archive bytes.
+The deterministic archive is written to `artifacts/LostKode-Ragnavik_UI-1.0.3.zip`. Repeated packaging from identical source and tool inputs produces identical archive bytes.
 
 Run source and package metadata validation without game assemblies:
 

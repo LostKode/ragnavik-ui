@@ -6,7 +6,7 @@ Install this package through Ragnavik 1.1.12 or newer. Its plugin is client only
 
 ## Changelog
 
-### 1.0.2
+### 1.0.3
 
 * Align armor, gold, weight, and trash into four clean rows.
 * Correct the trash button's visible and clickable areas so dragged items can be deleted normally.

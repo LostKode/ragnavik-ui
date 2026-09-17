@@ -1,6 +1,6 @@
 {
   "name": "Ragnavik_UI",
-  "version_number": "1.0.2",
+  "version_number": "1.0.3",
   "website_url": "https://ragnavik.vercel.app",
   "description": "Client UI fixes for Ragnavik: aligned inventory controls and a working trash drop target.",
   "dependencies": [
