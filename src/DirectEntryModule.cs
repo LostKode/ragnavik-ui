@@ -12,6 +12,7 @@ namespace RagnavikUI;
 
 internal sealed class DirectEntryModule
 {
+    private const string LocalTestWorldName = "galetest1";
     private static DirectEntryModule? current;
     private readonly Harmony harmony = new(RagnavikUIPlugin.PluginGuid + ".direct-entry");
     private readonly ManualLogSource log;
@@ -49,6 +50,44 @@ internal sealed class DirectEntryModule
         ServerJoinData joinData = new(new ServerJoinDataDedicated(target.Address, target.Port));
         Traverse.Create(startup).Field("m_queuedJoinServer").SetValue(joinData);
         log.LogInfo($"Prepared direct entry for {target.DisplayName} after character selection.");
+    }
+
+    private void StartLocalTestWorld(FejdStartup startup)
+    {
+        if (!target.IsTest || !startup.m_startGamePanel.activeSelf) return;
+
+        World? localWorld = FindLocalTestWorld();
+        if (localWorld == null)
+        {
+            startup.m_newWorldName.text = LocalTestWorldName;
+            startup.m_newWorldSeed.text = World.GenerateSeed();
+            startup.OnNewWorldDone(forceLocal: true);
+            localWorld = FindLocalTestWorld();
+        }
+
+        if (localWorld == null)
+        {
+            log.LogError($"Could not find or create the local {LocalTestWorldName} world. Leaving world selection open.");
+            return;
+        }
+
+        Traverse.Create(startup).Field("m_world").SetValue(localWorld);
+        startup.m_openServerToggle.SetIsOnWithoutNotify(false);
+        startup.m_publicServerToggle.SetIsOnWithoutNotify(false);
+        startup.m_crossplayServerToggle.SetIsOnWithoutNotify(false);
+        log.LogInfo($"Starting local Test Mode world {LocalTestWorldName}.");
+        startup.OnWorldStart();
+    }
+
+    private static World? FindLocalTestWorld()
+    {
+        foreach (World world in SaveSystem.GetWorldList())
+        {
+            if (world.m_worldName.Equals(LocalTestWorldName, StringComparison.OrdinalIgnoreCase) ||
+                world.m_name.Equals(LocalTestWorldName, StringComparison.OrdinalIgnoreCase))
+                return world;
+        }
+        return null;
     }
 
     private void UpdateMenu(FejdStartup startup)
@@ -116,6 +155,8 @@ internal sealed class DirectEntryModule
 
         [HarmonyPatch(typeof(FejdStartup), "OnStartGame"), HarmonyPrefix]
         private static void PrepareDirectEntry(FejdStartup __instance) => current?.Prepare(__instance);
+        [HarmonyPatch(typeof(FejdStartup), "OnCharacterStart"), HarmonyPostfix]
+        private static void StartTestWorld(FejdStartup __instance) => current?.StartLocalTestWorld(__instance);
 
         [HarmonyPatch(typeof(FejdStartup), "ShowConnectError"), HarmonyPostfix]
         private static void RecoverConnectionFailure(FejdStartup __instance) => current?.RecoverFromFailure(__instance);
