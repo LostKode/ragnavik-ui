@@ -8,7 +8,7 @@ on:
       expected_version: {description: Version expected in package manifest, required: true, type: string}
       blog_url: {description: Published Ragnavik release blog URL, required: true, type: string}
       staged_release_tag: {description: Optional private draft release tag containing the exact package ZIP, required: false, type: string}
-      publish: {description: Upload after validation, required: true, default: false, type: boolean}
+      publish: {description: Upload after validation, required: true, default: true, type: boolean}
 
 permissions:
   contents: read
