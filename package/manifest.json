@@ -1,6 +1,6 @@
 {
   "name": "Ragnavik_UI",
-  "version_number": "1.0.3",
+  "version_number": "1.0.4",
   "website_url": "https://ragnavik.vercel.app",
   "description": "Client UI defaults for Ragnavik's compass and clock presentation.",
   "dependencies": [
