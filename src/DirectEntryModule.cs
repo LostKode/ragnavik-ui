@@ -39,6 +39,13 @@ internal sealed class DirectEntryModule
 
     private void Prepare(FejdStartup startup)
     {
+        if (target.IsTest)
+        {
+            Traverse.Create(startup).Field("m_queuedJoinServer").SetValue(null);
+            log.LogInfo("Prepared native local-world entry for Test Mode.");
+            return;
+        }
+
         ServerJoinData joinData = new(new ServerJoinDataDedicated(target.Address, target.Port));
         Traverse.Create(startup).Field("m_queuedJoinServer").SetValue(joinData);
         log.LogInfo($"Prepared direct entry for {target.DisplayName} after character selection.");
@@ -91,6 +98,7 @@ internal sealed class DirectEntryModule
 
     private void RecoverFromFailure(FejdStartup startup)
     {
+        if (target.IsTest) return;
         if (!startup.m_connectionFailedPanel.activeSelf) return;
         startup.m_serverListPanel.SetActive(false);
         startup.m_startGamePanel.SetActive(false);

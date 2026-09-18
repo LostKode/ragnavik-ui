@@ -12,7 +12,7 @@ internal sealed class DirectEntryTarget
     internal bool IsTest { get; }
     internal string Address { get; }
     internal ushort Port { get; }
-    internal string DisplayName => IsTest ? "Ragnavik local test server" : "Ragnavik server";
+    internal string DisplayName => IsTest ? "local test game" : "Ragnavik server";
     internal string PlayLabel => IsTest ? "Play Ragnavik Test" : "Play Ragnavik";
     private DirectEntryTarget(bool isTest, string address, ushort port) { IsTest = isTest; Address = address; Port = port; }
 
@@ -34,7 +34,7 @@ internal sealed class DirectEntryTarget
         if (!isTest && !environment.Equals("Production", StringComparison.OrdinalIgnoreCase)) throw new InvalidOperationException("Direct entry environment must be Production or Test.");
         if (string.IsNullOrWhiteSpace(address) || address.IndexOfAny(new[] { ' ', '\t', '\r', '\n' }) >= 0) throw new InvalidOperationException("Direct entry address is invalid.");
         if (!ushort.TryParse(portText, out ushort port) || port == 0) throw new InvalidOperationException("Direct entry port is invalid.");
-        if (isTest && !IsLocalAddress(address)) throw new InvalidOperationException("Test Mode requires a loopback or private-network target.");
+        if (isTest && !IsLocalAddress(address)) throw new InvalidOperationException("Test Mode build metadata requires a loopback or private-network placeholder.");
         return new DirectEntryTarget(isTest, address, port);
     }
 
