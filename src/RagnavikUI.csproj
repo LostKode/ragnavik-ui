@@ -14,6 +14,9 @@
     <Reference Include="UnityEngine.UI" HintPath="$(ValheimManagedDir)/UnityEngine.UI.dll" />
     <Reference Include="UnityEngine.InputLegacyModule" HintPath="$(ValheimManagedDir)/UnityEngine.InputLegacyModule.dll" />
     <Reference Include="BepInEx" HintPath="$(BepInExCoreDir)/BepInEx.dll" />
+    <Reference Include="Unity.TextMeshPro" HintPath="$(ValheimManagedDir)/Unity.TextMeshPro.dll" />
+    <Reference Include="UnityEngine.UnityWebRequestModule" HintPath="$(ValheimManagedDir)/UnityEngine.UnityWebRequestModule.dll" />
+    <Reference Include="UnityEngine.JSONSerializeModule" HintPath="$(ValheimManagedDir)/UnityEngine.JSONSerializeModule.dll" />
     <Reference Include="0Harmony" HintPath="$(BepInExCoreDir)/0Harmony.dll" />
   </ItemGroup>
 </Project>
