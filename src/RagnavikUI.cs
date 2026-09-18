@@ -182,14 +182,22 @@ internal sealed class ChangelogModule
         if (float.IsPositiveInfinity(linkSpacing)) linkSpacing = originalRect.rect.height;
         menuButton = UnityEngine.Object.Instantiate(startup.m_showChangelogButton, startup.m_showChangelogButton.transform.parent);
         menuButton.name = "RagnavikChangelogButton";
+        // Keep custom controls out of the original menu's driven layout hierarchy.
+        Canvas rootCanvas = originalRect.GetComponentInParent<Canvas>().rootCanvas;
+        menuButton.transform.SetParent(rootCanvas.transform, true);
+        panel.transform.SetParent(rootCanvas.transform, true);
         LayoutElement element = menuButton.GetComponent<LayoutElement>() ?? menuButton.AddComponent<LayoutElement>();
         element.ignoreLayout = true;
         RectTransform? rect = menuButton.GetComponent<RectTransform>();
+        if (rect != null)
+        {
+            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.sizeDelta = originalRect.rect.size;
+            rect.pivot = originalRect.pivot;
+        }
         // Layout groups position children by sibling order and overwrite manual offsets.
-        menuButton.transform.SetSiblingIndex(originalRect.GetSiblingIndex());
+        menuButton.transform.SetAsLastSibling();
         LayoutGroup? linkLayout = originalRect.parent.GetComponent<LayoutGroup>();
-        if (linkLayout == null && rect != null)
-            rect.localPosition = originalRect.localPosition + new Vector3(0f, linkSpacing, 0f);
         Button action = menuButton.GetComponent<Button>();
         action.onClick = new Button.ButtonClickedEvent();
         action.onClick.AddListener(() => panel.SetActive(!panel.activeSelf));
@@ -229,30 +237,42 @@ internal sealed class ChangelogModule
         TMP_Text? originalLabel = original.GetComponentInChildren<TMP_Text>(true);
         TMP_Text? newLabel = menuButton.GetComponentInChildren<TMP_Text>(true);
         if (originalLabel == null || newLabel == null) return;
-        Vector3 originalCenter = originalLabel.rectTransform.TransformPoint(originalLabel.rectTransform.rect.center);
+        RectTransform canvasRect = (RectTransform)menuButton.transform.parent;
+        RectTransform buttonRect = menuButton.GetComponent<RectTransform>();
+        Vector3 originalCenter = canvasRect.InverseTransformPoint(originalLabel.rectTransform.TransformPoint(originalLabel.rectTransform.rect.center));
         float gap = float.PositiveInfinity;
         foreach (Transform sibling in original.parent)
         {
             if (sibling == original || sibling == menuButton.transform || !sibling.gameObject.activeSelf || sibling.GetComponent<Button>() == null) continue;
             TMP_Text? label = sibling.GetComponentInChildren<TMP_Text>(true);
             if (label == null) continue;
-            float distance = originalCenter.y - label.rectTransform.TransformPoint(label.rectTransform.rect.center).y;
+            float distance = originalCenter.y - canvasRect.InverseTransformPoint(label.rectTransform.TransformPoint(label.rectTransform.rect.center)).y;
             if (distance > 0f && distance < gap) gap = distance;
         }
         if (!float.IsPositiveInfinity(gap))
         {
-            Vector3 newCenter = newLabel.rectTransform.TransformPoint(newLabel.rectTransform.rect.center);
-            menuButton.transform.position += new Vector3(0f, originalCenter.y + gap - newCenter.y, 0f);
+            // Reset to the original pose before calculating the label offset. Never accumulate movement.
+            buttonRect.position = original.position;
+            Vector3 newCenter = canvasRect.InverseTransformPoint(newLabel.rectTransform.TransformPoint(newLabel.rectTransform.rect.center));
+            Vector3 basePosition = canvasRect.InverseTransformPoint(original.position);
+            buttonRect.localPosition = basePosition + new Vector3(originalCenter.x - newCenter.x, originalCenter.y + gap - newCenter.y, 0f);
         }
         if (panel != null && panel.activeInHierarchy)
         {
             RectTransform panelRect = panel.GetComponent<RectTransform>();
-            newLabel.rectTransform.GetWorldCorners(corners);
-            float buttonTop = corners[1].y;
-            panelRect.GetWorldCorners(corners);
-            Canvas canvas = panel.GetComponentInParent<Canvas>().rootCanvas;
-            float pixelsToWorld = canvas.transform.lossyScale.y / canvas.scaleFactor;
-            panelRect.position += new Vector3(0f, buttonTop + 20f * pixelsToWorld - corners[0].y, 0f);
+            buttonRect.GetWorldCorners(corners);
+            float buttonTop = canvasRect.InverseTransformPoint(corners[1]).y;
+            float buttonLeft = canvasRect.InverseTransformPoint(corners[0]).x;
+            Canvas canvas = canvasRect.GetComponent<Canvas>();
+            float margin = 20f / canvas.scaleFactor;
+            float bottom = buttonTop + margin;
+            float height = Mathf.Max(100f, canvasRect.rect.yMax - margin - bottom);
+            float width = Mathf.Min(600f, canvasRect.rect.width - 2f * margin);
+            panelRect.anchorMin = panelRect.anchorMax = Vector2.zero;
+            panelRect.pivot = Vector2.zero;
+            panelRect.localScale = Vector3.one;
+            panelRect.sizeDelta = new Vector2(width, height);
+            panelRect.anchoredPosition = new Vector2(Mathf.Clamp(buttonLeft - canvasRect.rect.xMin, margin, canvasRect.rect.width - width - margin), bottom - canvasRect.rect.yMin);
         }
     }
 
