@@ -18,8 +18,17 @@ internal sealed class LoadingScreenModule
     private readonly ManualLogSource log;
     private readonly LoadingContent content;
     private readonly List<Action> restorations = new();
+    private readonly HashSet<int> replacedIndicators = new();
     private Sprite? indicatorSprite;
+    private Sprite? sceneImage;
+    private GameObject? sceneOverlay;
+    private Image? sceneBackground;
+    private TMP_Text? sceneTip;
+    private float sceneContentChangedAt;
+    private Sprite? worldImage;
+    private string worldTip = string.Empty;
     private bool worldLoadingWasVisible;
+    private bool suppressWorldLoadingUntilHidden;
 
     internal LoadingScreenModule(BaseUnityPlugin plugin, ManualLogSource log)
     {
@@ -44,6 +53,7 @@ internal sealed class LoadingScreenModule
             catch (Exception error) { log.LogDebug($"Could not restore a loading UI object: {error.Message}"); }
         }
         restorations.Clear();
+        replacedIndicators.Clear();
         content.Dispose();
         if (indicatorSprite != null)
         {
@@ -52,6 +62,97 @@ internal sealed class LoadingScreenModule
             indicatorSprite = null;
         }
         if (ReferenceEquals(current, this)) current = null;
+    }
+
+    private void SetupSceneLoader(SceneLoader loader)
+    {
+        if (!content.TryNextImage(out sceneImage) || sceneImage == null) return;
+        Canvas? canvas = loader.GetComponentInChildren<Canvas>(true) ?? loader.GetComponentInParent<Canvas>();
+        if (canvas == null)
+        {
+            log.LogWarning("Valheim SceneLoader canvas was unavailable; leaving the vanilla startup screen unchanged.");
+            return;
+        }
+
+        sceneOverlay = new GameObject("RagnavikSceneLoading", typeof(RectTransform));
+        RectTransform overlayRect = sceneOverlay.GetComponent<RectTransform>();
+        overlayRect.SetParent(canvas.transform, false);
+        Stretch(overlayRect);
+        sceneOverlay.transform.SetAsLastSibling();
+
+        GameObject blackObject = new("Background", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        RectTransform blackRect = blackObject.GetComponent<RectTransform>();
+        blackRect.SetParent(overlayRect, false);
+        Stretch(blackRect);
+        Image black = blackObject.GetComponent<Image>();
+        black.color = Color.black;
+        black.raycastTarget = false;
+
+        GameObject imageObject = new("Artwork", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        RectTransform imageRect = imageObject.GetComponent<RectTransform>();
+        imageRect.SetParent(overlayRect, false);
+        Stretch(imageRect);
+        sceneBackground = imageObject.GetComponent<Image>();
+        sceneBackground.raycastTarget = false;
+        ApplyImage(sceneBackground, sceneImage);
+
+        TMP_Text? sourceText = loader.GetComponentInChildren<TMP_Text>(true);
+        if (sourceText != null && content.TryNextTip(out string tip))
+        {
+            sceneTip = UnityEngine.Object.Instantiate(sourceText, overlayRect);
+            sceneTip.name = "RagnavikSceneLoadingTip";
+            foreach (MonoBehaviour component in sceneTip.GetComponents<MonoBehaviour>())
+                if (component != sceneTip) UnityEngine.Object.DestroyImmediate(component);
+            SetupTip(sceneTip);
+            sceneTip.text = tip;
+            sceneTip.gameObject.SetActive(true);
+        }
+
+        if (indicatorSprite != null)
+        {
+            GameObject marker = new("RagnavikSceneLoadingIndicator", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(FjordGateActivity));
+            RectTransform markerRect = marker.GetComponent<RectTransform>();
+            markerRect.SetParent(overlayRect, false);
+            markerRect.anchorMin = markerRect.anchorMax = new Vector2(0.5f, 0f);
+            markerRect.pivot = new Vector2(0.5f, 0f);
+            markerRect.anchoredPosition = new Vector2(0f, 36f);
+            markerRect.sizeDelta = new Vector2(88f, 88f);
+            Image markerImage = marker.GetComponent<Image>();
+            markerImage.sprite = indicatorSprite;
+            markerImage.preserveAspect = true;
+            markerImage.raycastTarget = false;
+        }
+
+        sceneContentChangedAt = Time.unscaledTime;
+        restorations.Add(() =>
+        {
+            if (sceneOverlay != null) UnityEngine.Object.Destroy(sceneOverlay);
+            sceneOverlay = null;
+            sceneBackground = null;
+            sceneTip = null;
+        });
+        log.LogInfo("Prepared the Ragnavik initial startup loading screen.");
+    }
+
+    private void UpdateSceneLoader(SceneLoader loader)
+    {
+        if (sceneOverlay == null || sceneBackground == null || sceneImage == null) return;
+        sceneOverlay.transform.SetAsLastSibling();
+        if (Time.unscaledTime - sceneContentChangedAt >= 10f)
+        {
+            if (content.TryNextImage(out Sprite? nextImage) && nextImage != null) sceneImage = nextImage;
+            if (sceneTip != null && content.TryNextTip(out string nextTip)) sceneTip.text = nextTip;
+            sceneContentChangedAt = Time.unscaledTime;
+        }
+        ApplyImage(sceneBackground, sceneImage);
+    }
+
+    private static void Stretch(RectTransform rect)
+    {
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
     }
 
     private void SetupStartup(FejdStartup startup)
@@ -63,7 +164,7 @@ internal sealed class LoadingScreenModule
         TMP_Text? sourceText = textTransform?.GetComponent<TMP_Text>();
         if (background == null || sourceText == null)
         {
-            log.LogWarning("Valheim startup loading UI was unavailable; leaving the vanilla screen unchanged.");
+            log.LogWarning("Valheim menu loading UI was unavailable; leaving the vanilla screen unchanged.");
             return;
         }
 
@@ -74,19 +175,11 @@ internal sealed class LoadingScreenModule
 
         TMP_Text tip = UnityEngine.Object.Instantiate(sourceText, sourceText.transform.parent);
         tip.name = "RagnavikLoadingTip";
-        tip.enableAutoSizing = true;
-        tip.fontSizeMin = 16f;
-        tip.fontSizeMax = 28f;
-        tip.alignment = TextAlignmentOptions.Center;
-        tip.rectTransform.anchorMin = new Vector2(0.12f, 0.04f);
-        tip.rectTransform.anchorMax = new Vector2(0.88f, 0.22f);
-        tip.rectTransform.offsetMin = tip.rectTransform.offsetMax = Vector2.zero;
+        SetupTip(tip);
         if (content.TryNextTip(out string text)) tip.text = text;
         sourceText.enabled = false;
 
-        background.sprite = image;
-        background.preserveAspect = true;
-        background.color = Color.white;
+        ApplyImage(background, image);
         SetupIndicator(startup.m_loading.transform);
 
         restorations.Add(() =>
@@ -100,18 +193,21 @@ internal sealed class LoadingScreenModule
             if (sourceText != null) sourceText.enabled = true;
             if (tip != null) UnityEngine.Object.Destroy(tip.gameObject);
         });
-        log.LogInfo("Prepared the Ragnavik startup loading screen.");
+        log.LogInfo("Prepared the Ragnavik menu transition loading screen.");
     }
 
     private void SetupWorld(Hud hud)
     {
-        if (hud.m_loadingImage == null || hud.m_loadingTip == null)
+        worldLoadingWasVisible = false;
+        suppressWorldLoadingUntilHidden = false;
+        worldImage = null;
+        worldTip = string.Empty;
+        if (hud.m_loadingImage == null || hud.m_loadingTip == null || hud.m_loadingProgress == null)
         {
             log.LogWarning("Valheim world loading UI was unavailable; leaving the vanilla screen unchanged.");
             return;
         }
-        hud.m_loadingImage.preserveAspect = true;
-        worldLoadingWasVisible = false;
+        SetupIndicator(hud.m_loadingProgress.transform);
     }
 
     private void UpdateWorld(Hud hud)
@@ -119,18 +215,51 @@ internal sealed class LoadingScreenModule
         if (hud.m_loadingScreen == null || hud.m_loadingImage == null || hud.m_loadingTip == null) return;
         bool visible = hud.m_loadingScreen.gameObject.activeInHierarchy && hud.m_loadingImage.gameObject.activeInHierarchy;
         bool teleporting = Player.m_localPlayer != null && Player.m_localPlayer.ShowTeleportAnimation();
-        if (teleporting) return;
-        if (visible && !worldLoadingWasVisible)
+
+        if (teleporting)
         {
-            if (content.TryNextImage(out Sprite? image) && image != null)
-            {
-                hud.m_loadingImage.sprite = image;
-                hud.m_loadingImage.preserveAspect = true;
-                hud.m_loadingImage.color = Color.white;
-            }
-            if (content.TryNextTip(out string tip)) hud.m_loadingTip.text = tip;
+            suppressWorldLoadingUntilHidden = true;
+            worldLoadingWasVisible = false;
+            return;
         }
-        worldLoadingWasVisible = visible;
+        if (suppressWorldLoadingUntilHidden)
+        {
+            if (!visible) suppressWorldLoadingUntilHidden = false;
+            return;
+        }
+        if (!visible)
+        {
+            worldLoadingWasVisible = false;
+            return;
+        }
+
+        if (!worldLoadingWasVisible)
+        {
+            if (content.TryNextImage(out Sprite? nextImage)) worldImage = nextImage;
+            if (content.TryNextTip(out string nextTip)) worldTip = nextTip;
+        }
+        worldLoadingWasVisible = true;
+
+        if (worldImage != null) ApplyImage(hud.m_loadingImage, worldImage);
+        if (worldTip.Length > 0) hud.m_loadingTip.text = worldTip;
+    }
+
+    private static void SetupTip(TMP_Text tip)
+    {
+        tip.enableAutoSizing = true;
+        tip.fontSizeMin = 16f;
+        tip.fontSizeMax = 28f;
+        tip.alignment = TextAlignmentOptions.Center;
+        tip.rectTransform.anchorMin = new Vector2(0.12f, 0.04f);
+        tip.rectTransform.anchorMax = new Vector2(0.88f, 0.22f);
+        tip.rectTransform.offsetMin = tip.rectTransform.offsetMax = Vector2.zero;
+    }
+
+    private static void ApplyImage(Image target, Sprite image)
+    {
+        target.sprite = image;
+        target.preserveAspect = true;
+        target.color = Color.white;
     }
 
     private void SetupIndicator(Transform root)
@@ -138,8 +267,10 @@ internal sealed class LoadingScreenModule
         if (indicatorSprite == null || root == null) return;
         foreach (LoadingIndicator indicator in root.GetComponentsInChildren<LoadingIndicator>(true))
         {
+            int id = indicator.GetInstanceID();
+            if (replacedIndicators.Contains(id)) continue;
             Image? vanillaImage = indicator.GetComponent<Image>() ?? indicator.GetComponentInChildren<Image>(true);
-            if (vanillaImage == null || vanillaImage.gameObject.name.StartsWith("Ragnavik", StringComparison.Ordinal)) continue;
+            if (vanillaImage == null) continue;
 
             GameObject marker = new("RagnavikLoadingIndicator", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(FjordGateActivity));
             RectTransform rect = marker.GetComponent<RectTransform>();
@@ -155,8 +286,10 @@ internal sealed class LoadingScreenModule
             markerImage.raycastTarget = false;
             bool vanillaEnabled = vanillaImage.enabled;
             vanillaImage.enabled = false;
+            replacedIndicators.Add(id);
             restorations.Add(() =>
             {
+                replacedIndicators.Remove(id);
                 if (vanillaImage != null) vanillaImage.enabled = vanillaEnabled;
                 if (marker != null) UnityEngine.Object.Destroy(marker);
             });
@@ -186,11 +319,25 @@ internal sealed class LoadingScreenModule
 
     private static class Patches
     {
+        [HarmonyPatch(typeof(SceneLoader), "Start"), HarmonyPrefix]
+        private static void SceneLoaderStart(SceneLoader __instance)
+        {
+            try { current?.SetupSceneLoader(__instance); }
+            catch (Exception error) { current?.log.LogWarning($"Initial startup loading screen fell back to vanilla: {error}"); }
+        }
+
+        [HarmonyPatch(typeof(SceneLoader), "Update"), HarmonyPostfix]
+        private static void SceneLoaderUpdate(SceneLoader __instance)
+        {
+            try { current?.UpdateSceneLoader(__instance); }
+            catch (Exception error) { current?.log.LogWarning($"Could not maintain initial startup loading content: {error.Message}"); }
+        }
+
         [HarmonyPatch(typeof(FejdStartup), "Awake"), HarmonyPostfix]
         private static void StartupAwake(FejdStartup __instance)
         {
             try { current?.SetupStartup(__instance); }
-            catch (Exception error) { current?.log.LogWarning($"Startup loading screen fell back to vanilla: {error}"); }
+            catch (Exception error) { current?.log.LogWarning($"Menu loading screen fell back to vanilla: {error}"); }
         }
 
         [HarmonyPatch(typeof(Hud), "Awake"), HarmonyPostfix]
