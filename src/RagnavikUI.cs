@@ -169,12 +169,18 @@ internal sealed class ChangelogModule
         menuButton = UnityEngine.Object.Instantiate(startup.m_showChangelogButton, startup.m_showChangelogButton.transform.parent);
         menuButton.name = "RagnavikChangelogButton";
         RectTransform? rect = menuButton.GetComponent<RectTransform>();
-        if (rect != null) rect.localPosition = originalRect.localPosition + new Vector3(0f, linkSpacing, 0f);
+        // Layout groups position children by sibling order and overwrite manual offsets.
+        menuButton.transform.SetSiblingIndex(originalRect.GetSiblingIndex());
+        LayoutGroup? linkLayout = originalRect.parent.GetComponent<LayoutGroup>();
+        if (linkLayout == null && rect != null)
+            rect.localPosition = originalRect.localPosition + new Vector3(0f, linkSpacing, 0f);
         Button action = menuButton.GetComponent<Button>();
         action.onClick = new Button.ButtonClickedEvent();
         action.onClick.AddListener(() => panel.SetActive(!panel.activeSelf));
         TMP_Text? buttonLabel = menuButton.GetComponentInChildren<TMP_Text>(true);
         if (buttonLabel != null) buttonLabel.text = "Ragnavik Updates";
+        if (linkLayout != null)
+            LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)originalRect.parent);
         UpdateBody();
         log.LogInfo("Created Ragnavik Updates menu button and changelog panel.");
     }
