@@ -3,10 +3,10 @@
 
 ## 1.1.0
 
-* Add an independently guarded main-menu changelog module.
-* Reuse Valheim's native changelog button and panel.
-* Read pack-owned text from `BepInEx/config/RagnavikUI/changelog.txt` and fall back to Valheim's changelog when it is unavailable.
-* Add configuration for automatic opening and vanilla-text replacement.
+* Add an independently guarded Ragnavik changelog button and panel without changing Valheim's changelog.
+* Load the authoritative changelog from the Ragnavik website.
+* Cache the last successful response for offline launches and temporary website failures.
+* Add configuration for automatic opening and the public endpoint.
 ## 1.0.3
 
 * Remove the TrashItems dependency and trash click integration.
