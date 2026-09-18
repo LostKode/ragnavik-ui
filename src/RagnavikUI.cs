@@ -140,7 +140,6 @@ internal sealed class ChangelogModule
         panel.name = "RagnavikChangelogPanel";
         ChangeLog? vanillaComponent = panel.GetComponent<ChangeLog>();
         body = vanillaComponent?.m_textField;
-        if (vanillaComponent?.m_showPlayerLog != null) vanillaComponent.m_showPlayerLog.SetActive(false);
         if (vanillaComponent != null) UnityEngine.Object.DestroyImmediate(vanillaComponent);
         TMP_Text[] labels = panel.GetComponentsInChildren<TMP_Text>(true);
         foreach (TMP_Text label in labels)
@@ -156,10 +155,21 @@ internal sealed class ChangelogModule
             button.onClick.AddListener(() => panel.SetActive(false));
         }
         panel.SetActive(false);
+        RectTransform originalRect = startup.m_showChangelogButton.GetComponent<RectTransform>();
+        float linkSpacing = float.PositiveInfinity;
+        foreach (Transform sibling in originalRect.parent)
+        {
+            if (sibling == originalRect || sibling.GetComponent<Button>() == null) continue;
+            RectTransform? siblingRect = sibling as RectTransform;
+            if (siblingRect == null) continue;
+            float gap = originalRect.localPosition.y - siblingRect.localPosition.y;
+            if (gap > 0f && gap < linkSpacing) linkSpacing = gap;
+        }
+        if (float.IsPositiveInfinity(linkSpacing)) linkSpacing = originalRect.rect.height;
         menuButton = UnityEngine.Object.Instantiate(startup.m_showChangelogButton, startup.m_showChangelogButton.transform.parent);
         menuButton.name = "RagnavikChangelogButton";
         RectTransform? rect = menuButton.GetComponent<RectTransform>();
-        if (rect != null) rect.anchoredPosition += new Vector2(0f, 40f);
+        if (rect != null) rect.localPosition = originalRect.localPosition + new Vector3(0f, linkSpacing, 0f);
         Button action = menuButton.GetComponent<Button>();
         action.onClick = new Button.ButtonClickedEvent();
         action.onClick.AddListener(() => panel.SetActive(!panel.activeSelf));
