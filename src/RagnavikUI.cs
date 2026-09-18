@@ -42,6 +42,8 @@ internal sealed class ChangelogModule
     private TMP_Text? body;
     private string text = "Loading Ragnavik updates...";
     private bool opened;
+    private FejdStartup? menu;
+    private readonly Vector3[] corners = new Vector3[4];
 
     internal ChangelogModule(BaseUnityPlugin plugin, ConfigFile config, ManualLogSource log)
     {
@@ -64,6 +66,7 @@ internal sealed class ChangelogModule
 
     internal void Stop()
     {
+        Canvas.willRenderCanvases -= PositionMenu;
         harmony.UnpatchSelf();
         if (panel != null) UnityEngine.Object.Destroy(panel);
         if (menuButton != null) UnityEngine.Object.Destroy(menuButton);
@@ -127,7 +130,7 @@ internal sealed class ChangelogModule
             StringBuilder builder = new();
             foreach (ChangelogEntry entry in feed.entries)
             {
-                builder.Append("<size=26><b>").Append(entry.version).Append(": ").Append(entry.title).AppendLine("</b></size>");
+                builder.Append("<b>").Append(entry.version).Append(": ").Append(entry.title).AppendLine("</b>");
                 builder.AppendLine(entry.publishedAt);
                 if (entry.changes != null) foreach (string change in entry.changes) builder.Append("• ").AppendLine(change);
                 builder.AppendLine();
@@ -145,6 +148,12 @@ internal sealed class ChangelogModule
         panel.name = "RagnavikChangelogPanel";
         ChangeLog? vanillaComponent = panel.GetComponent<ChangeLog>();
         body = vanillaComponent?.m_textField;
+        TMP_Text? originalBody = startup.m_changeLog.GetComponent<ChangeLog>()?.m_textField;
+        if (body != null && originalBody != null)
+        {
+            body.enableAutoSizing = false;
+            body.fontSize = originalBody.enableAutoSizing ? originalBody.fontSizeMin : originalBody.fontSize;
+        }
         if (vanillaComponent != null) UnityEngine.Object.DestroyImmediate(vanillaComponent);
         TMP_Text[] labels = panel.GetComponentsInChildren<TMP_Text>(true);
         foreach (TMP_Text label in labels)
@@ -189,6 +198,9 @@ internal sealed class ChangelogModule
         if (linkLayout != null)
             LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)originalRect.parent);
         UpdateBody();
+        menu = startup;
+        Canvas.willRenderCanvases -= PositionMenu;
+        Canvas.willRenderCanvases += PositionMenu;
         log.LogInfo("Created Ragnavik Updates menu button and changelog panel.");
     }
 
@@ -209,19 +221,39 @@ internal sealed class ChangelogModule
         else Hide();
     }
 
-    private void PositionLink(FejdStartup startup)
+    private void PositionMenu()
     {
-        if (menuButton == null) return;
+        if (menuButton == null || menu == null || !menuButton.activeInHierarchy) return;
+        FejdStartup startup = menu;
         RectTransform original = startup.m_showChangelogButton.GetComponent<RectTransform>();
+        TMP_Text? originalLabel = original.GetComponentInChildren<TMP_Text>(true);
+        TMP_Text? newLabel = menuButton.GetComponentInChildren<TMP_Text>(true);
+        if (originalLabel == null || newLabel == null) return;
+        Vector3 originalCenter = originalLabel.rectTransform.TransformPoint(originalLabel.rectTransform.rect.center);
         float gap = float.PositiveInfinity;
         foreach (Transform sibling in original.parent)
         {
             if (sibling == original || sibling == menuButton.transform || !sibling.gameObject.activeSelf || sibling.GetComponent<Button>() == null) continue;
-            float distance = original.localPosition.y - sibling.localPosition.y;
+            TMP_Text? label = sibling.GetComponentInChildren<TMP_Text>(true);
+            if (label == null) continue;
+            float distance = originalCenter.y - label.rectTransform.TransformPoint(label.rectTransform.rect.center).y;
             if (distance > 0f && distance < gap) gap = distance;
         }
         if (!float.IsPositiveInfinity(gap))
-            menuButton.transform.localPosition = original.localPosition + new Vector3(0f, gap, 0f);
+        {
+            Vector3 newCenter = newLabel.rectTransform.TransformPoint(newLabel.rectTransform.rect.center);
+            menuButton.transform.position += new Vector3(0f, originalCenter.y + gap - newCenter.y, 0f);
+        }
+        if (panel != null && panel.activeInHierarchy)
+        {
+            RectTransform panelRect = panel.GetComponent<RectTransform>();
+            newLabel.rectTransform.GetWorldCorners(corners);
+            float buttonTop = corners[1].y;
+            panelRect.GetWorldCorners(corners);
+            Canvas canvas = panel.GetComponentInParent<Canvas>().rootCanvas;
+            float pixelsToWorld = canvas.transform.lossyScale.y / canvas.scaleFactor;
+            panelRect.position += new Vector3(0f, buttonTop + 20f * pixelsToWorld - corners[0].y, 0f);
+        }
     }
 
     private static class Patches
@@ -229,7 +261,7 @@ internal sealed class ChangelogModule
         [HarmonyPatch(typeof(FejdStartup), "Start"), HarmonyPostfix]
         private static void InitialMenu(FejdStartup __instance) { try { current?.Show(__instance); } catch (Exception error) { current?.log.LogWarning(error); } }
         [HarmonyPatch(typeof(FejdStartup), "Update"), HarmonyPostfix]
-        private static void UpdateMenu(FejdStartup __instance) { current?.RefreshMenu(__instance); current?.PositionLink(__instance); }
+        private static void UpdateMenu(FejdStartup __instance) { current?.RefreshMenu(__instance); }
         [HarmonyPatch(typeof(FejdStartup), "ShowCharacterSelection"), HarmonyPostfix]
         private static void HideCharacters() => current?.Hide();
         [HarmonyPatch(typeof(FejdStartup), "LoadMainScene"), HarmonyPrefix]
