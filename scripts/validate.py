@@ -33,11 +33,17 @@ required_files = [
     root / "package/README.md",
     root / "package/CHANGELOG.md",
     root / "package/icon.png",
+    root / "package/direct-entry.env",
     root / "package/config/Azumatt.AzuClock.cfg",
 ]
 for path in required_files:
     if not path.is_file() or path.stat().st_size == 0:
         errors.append(f"required package asset missing or empty: {path.relative_to(root)}")
+
+direct_entry_template = (root / "package/direct-entry.env").read_text(encoding="utf-8")
+for token in ("__RAGNAVIK_ENTRY_ENVIRONMENT__", "__RAGNAVIK_SERVER_ADDRESS__", "__RAGNAVIK_SERVER_PORT__"):
+    if direct_entry_template.count(token) != 1:
+        errors.append(f"direct entry template must contain {token} exactly once")
 
 if not tool_manifest_path.is_file():
     errors.append("Hexium publishing requires .config/dotnet-tools.json")

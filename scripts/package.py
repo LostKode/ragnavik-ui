@@ -1,16 +1,35 @@
 #!/usr/bin/env python3
+import os
 import pathlib
 import sys
 import zipfile
 
 FIXED_TIME = (1980, 1, 1, 0, 0, 0)
+TOKENS = {
+    b"__RAGNAVIK_ENTRY_ENVIRONMENT__": "RAGNAVIK_ENTRY_ENVIRONMENT",
+    b"__RAGNAVIK_SERVER_ADDRESS__": "RAGNAVIK_SERVER_ADDRESS",
+    b"__RAGNAVIK_SERVER_PORT__": "RAGNAVIK_SERVER_PORT",
+}
+
+def packaged_bytes(source: pathlib.Path) -> bytes:
+    data = source.read_bytes()
+    for token, variable in TOKENS.items():
+        if token not in data:
+            continue
+        value = os.environ.get(variable, "").strip()
+        if not value:
+            raise SystemExit(f"release artifact requires {variable}")
+        if any(character in value for character in "\r\n\t"):
+            raise SystemExit(f"{variable} contains invalid whitespace")
+        data = data.replace(token, value.encode("utf-8"))
+    return data
 
 
 def add_file(archive: zipfile.ZipFile, source: pathlib.Path, destination: str) -> None:
     info = zipfile.ZipInfo(destination, FIXED_TIME)
     info.compress_type = zipfile.ZIP_DEFLATED
     info.external_attr = 0o100644 << 16
-    archive.writestr(info, source.read_bytes(), compresslevel=9)
+    archive.writestr(info, packaged_bytes(source), compresslevel=9)
 
 
 def main() -> int:
@@ -28,6 +47,7 @@ def main() -> int:
         (package_dir / "assets/ragnavik-fjord-gate.png", "plugins/RagnavikUI/ragnavik-fjord-gate.png"),
         (package_dir / "assets/discord.png", "plugins/RagnavikUI/discord.png"),
         (package_dir / "assets/buymeacoffee.png", "plugins/RagnavikUI/buymeacoffee.png"),
+        (package_dir / "direct-entry.env", "plugins/RagnavikUI/direct-entry.env"),
         (package_dir / "config/Azumatt.AzuClock.cfg", "config/Azumatt.AzuClock.cfg"),
         (dll_path, "plugins/RagnavikUI/RagnavikUI.dll"),
     ]
