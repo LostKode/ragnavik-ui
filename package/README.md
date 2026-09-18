@@ -6,6 +6,8 @@ Test Mode keeps character selection local, then automatically launches the on-sy
 
 The Ragnavik panel loads updates from the public Ragnavik website and caches the last successful response for offline use. The main menu also provides configurable Discord help and Buy Me a Coffee support links.
 
+The Ragnavik character selector shows only characters created inside the active Ragnavik production or local test environment. It never imports, renames, moves, or displays existing Valheim characters. Ragnavik characters remain in Valheim's normal protected character storage so native save, backup, cloud, and recovery behavior continues to apply.
+
 Install this package through Ragnavik 1.1.12 or newer. Its plugin is client only. Ragnavik Server 1.0.6 or newer allows the plugin ID `lostkode.ragnavik.ui` in the anti-cheat profile; the dedicated server does not need this UI plugin.
 
 ## Changelog

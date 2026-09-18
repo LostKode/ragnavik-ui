@@ -34,6 +34,7 @@ required_files = [
     root / "package/CHANGELOG.md",
     root / "package/icon.png",
     root / "package/direct-entry.env",
+    root / "package/character-environment.env",
     root / "package/config/Azumatt.AzuClock.cfg",
 ]
 for path in required_files:
@@ -44,6 +45,12 @@ direct_entry_template = (root / "package/direct-entry.env").read_text(encoding="
 for token in ("__RAGNAVIK_ENTRY_ENVIRONMENT__", "__RAGNAVIK_SERVER_ADDRESS__", "__RAGNAVIK_SERVER_PORT__"):
     if direct_entry_template.count(token) != 1:
         errors.append(f"direct entry template must contain {token} exactly once")
+
+character_environment_template = (root / "package/character-environment.env").read_text(encoding="utf-8")
+if character_environment_template.count("__RAGNAVIK_ENTRY_ENVIRONMENT__") != 1:
+    errors.append("character environment template must contain exactly one environment token")
+if "Address=" in character_environment_template or "Port=" in character_environment_template:
+    errors.append("character environment template must not contain connection details")
 
 if not tool_manifest_path.is_file():
     errors.append("Hexium publishing requires .config/dotnet-tools.json")
