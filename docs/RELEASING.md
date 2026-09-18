@@ -4,11 +4,12 @@
 
 1. Update the version in `package/manifest.json` and the `BepInPlugin` attribute in `src/RagnavikUI.cs`.
 2. Add the release notes to `package/CHANGELOG.md` and update `package/README.md` when behavior or requirements change.
-3. Publish a corresponding release blog post on the Ragnavik website. Every Ragnavik UI release requires a website blog post. Do not publish the Thunderstore package until that post is ready.
+3. Publish a corresponding release blog post on the Ragnavik website. Every Ragnavik UI release requires a website blog post. Do not publish the Hexium package until that post is ready.
 4. Run `./scripts/validate.sh`.
 5. Run `./scripts/package.sh` twice with the same managed assembly inputs and verify that the resulting archive checksum is unchanged.
 6. Inspect the archive. It must contain only `manifest.json`, `README.md`, `CHANGELOG.md`, `icon.png`, the config asset, and the freshly built plugin DLL.
 7. Tag the source commit with `v<version>` only after the release contents are final.
+8. Run **Prepare Hexium package** with `publish` disabled. Automated upload remains fail closed until Hexium documents a publication endpoint; publication still requires explicit approval.
 
 ## Anti cheat coordination
 
