@@ -266,17 +266,10 @@ internal sealed class ChangelogModule
         {
             RectTransform vanillaRect = startup.m_changeLog.GetComponent<RectTransform>();
             RectTransform panelRect = panel.GetComponent<RectTransform>();
-            // Preserve the native panel's parent, anchors, dimensions, scale and horizontal position.
+            // Reset to the captured native placement, then move only upward by 50 screen pixels.
             vanillaRect.localPosition = vanillaPanelPosition;
-            buttonRect.GetWorldCorners(corners);
-            float buttonTop = canvasRect.InverseTransformPoint(corners[1]).y;
             Canvas canvas = canvasRect.GetComponent<Canvas>();
-            float margin = 20f / canvas.scaleFactor;
-            ChangeLog vanilla = startup.m_changeLog.GetComponent<ChangeLog>();
-            RectTransform bounds = vanilla.m_scrollbar != null ? vanilla.m_scrollbar.GetComponent<RectTransform>() : vanillaRect;
-            bounds.GetWorldCorners(corners);
-            float nativeBottom = canvasRect.InverseTransformPoint(corners[0]).y;
-            Vector3 shift = canvasRect.TransformVector(new Vector3(0f, buttonTop + margin - nativeBottom, 0f));
+            Vector3 shift = canvasRect.TransformVector(new Vector3(0f, 50f / canvas.scaleFactor, 0f));
             vanillaRect.position += shift;
             panelRect.position = vanillaRect.position;
         }
