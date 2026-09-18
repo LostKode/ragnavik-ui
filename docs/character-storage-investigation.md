@@ -53,7 +53,7 @@ The public 1.4.17 source and installed DLL show that ServerCharacters uses the s
 
 This means a client-only physical-folder redirect must also account for ServerCharacters emergency files. A broad redirect of `SaveSystem.GetCharacterFolderPath` risks changing vanilla profiles and unrelated character operations. A narrow redirect applied only during UI enumeration would leave later load, save, delete, backup, and ServerCharacters emergency operations pointed at a different location.
 
-## Narrow safe alternative requiring approval
+## Approved fallback
 
 Keep every profile in Valheim's normal source-specific character root and isolate Ragnavik ownership by internal filename plus a small Ragnavik registry:
 
@@ -67,6 +67,6 @@ Keep every profile in Valheim's normal source-specific character root and isolat
 
 This alternative provides selector isolation and separate production/test namespaces without separate physical folders. It still requires Gale runtime verification before any character-safety claim, especially for creation, restart persistence, deletion, vanilla backup restore, cloud/local behavior, ServerCharacters acquisition, disconnect emergency backup, reconnect restore, and stable `m_playerID`.
 
-## Approval gate
+## Implementation status
 
-Do not implement the filename-and-registry fallback until Daniel explicitly approves the weaker storage boundary. Physical folder isolation remains rejected unless Valheim or ServerCharacters adds a supported per-profile storage-root API.
+Daniel approved the filename-and-registry fallback on 2026-09-18. It is implemented on `feat/isolated-ragnavik-characters` for Gale verification. Physical folder isolation remains rejected unless Valheim or ServerCharacters adds a supported per-profile storage-root API.
