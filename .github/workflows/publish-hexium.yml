@@ -79,8 +79,10 @@ jobs:
             echo "PUBLISH_REQUIRED=true" >> "$GITHUB_ENV"
           elif [[ "$public_version" == "$EXPECTED_VERSION" ]]; then
             echo "PUBLISH_REQUIRED=false" >> "$GITHUB_ENV"
+          elif [[ "$(printf '%s\n%s\n' "$public_version" "$EXPECTED_VERSION" | sort -V | tail -n 1)" == "$EXPECTED_VERSION" ]]; then
+            echo "PUBLISH_REQUIRED=true" >> "$GITHUB_ENV"
           else
-            echo "Expected $EXPECTED_VERSION but Hexium currently exposes $public_version" >&2
+            echo "Expected $EXPECTED_VERSION but Hexium already exposes newer version $public_version" >&2
             exit 1
           fi
       - name: Require Hexium token for publication
