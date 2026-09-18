@@ -25,6 +25,9 @@ def main() -> int:
         (package_dir / "README.md", "README.md"),
         (package_dir / "CHANGELOG.md", "CHANGELOG.md"),
         (package_dir / "icon.png", "icon.png"),
+        (package_dir / "assets/ragnavik-fjord-gate.png", "plugins/RagnavikUI/ragnavik-fjord-gate.png"),
+        (package_dir / "assets/discord.png", "plugins/RagnavikUI/discord.png"),
+        (package_dir / "assets/buymeacoffee.png", "plugins/RagnavikUI/buymeacoffee.png"),
         (package_dir / "config/Azumatt.AzuClock.cfg", "config/Azumatt.AzuClock.cfg"),
         (dll_path, "plugins/RagnavikUI/RagnavikUI.dll"),
     ]
