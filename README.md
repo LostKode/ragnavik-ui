@@ -1,12 +1,12 @@
 # Ragnavik UI
 
-Ragnavik UI is a client only BepInEx plugin for the Ragnavik Valheim modpack. It layers layout fixes over AzuClock, HUDCompass, CurrencyPocket, and TrashItems. It does not replace those dependency mods or provide their features.
+Ragnavik UI is a client only BepInEx plugin for the Ragnavik Valheim modpack. It provides guarded interface modules for the clock, compass, inventory, and Ragnavik changelog.
 
-Version 1.0.2 arranges armor, gold, weight, and trash controls in four measured rows beside the inventory. It also keeps the visible trash panel aligned with TrashItems' interactive drop target.
+Version 1.1.0 adds a separate website backed Ragnavik changelog while leaving Valheim's native changelog unchanged.
 
 ## Install
 
-Install `LostKode-Ragnavik_UI` through Thunderstore or as a dependency of the Ragnavik client pack. This plugin belongs only on clients. The dedicated server does not need it.
+Install `LostKode-Ragnavik_UI` from Hexium or as a dependency of the Ragnavik client pack. This plugin belongs only on clients. The dedicated server does not need it.
 
 Because it is client only, add the plugin ID `lostkode.ragnavik.ui` to `CatosAntiCheat_ExtraWhitelist.txt` when CatosAntiCheat is enabled.
 
@@ -20,7 +20,7 @@ BEPINEX_CORE_DIR=/path/to/BepInEx/core \
 ./scripts/build.sh
 ```
 
-Create the Thunderstore package with:
+Create the Hexium package archive with:
 
 ```sh
 VALHEIM_MANAGED_DIR=/path/to/valheim_Data/Managed \
@@ -28,7 +28,7 @@ BEPINEX_CORE_DIR=/path/to/BepInEx/core \
 ./scripts/package.sh
 ```
 
-The deterministic archive is written to `artifacts/LostKode-Ragnavik_UI-1.0.2.zip`. Repeated packaging from identical source and tool inputs produces identical archive bytes.
+The deterministic archive is written to `artifacts/LostKode-Ragnavik_UI-1.1.0.zip`. Repeated packaging from identical source and tool inputs produces identical archive bytes.
 
 Run source and package metadata validation without game assemblies:
 

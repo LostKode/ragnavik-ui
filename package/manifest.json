@@ -1,12 +1,11 @@
 {
   "name": "Ragnavik_UI",
-  "version_number": "1.0.4",
+  "version_number": "1.1.0",
   "website_url": "https://ragnavik.vercel.app",
-  "description": "Client UI defaults for Ragnavik's compass and clock presentation.",
+  "description": "Ragnavik interface modules and presentation for the Ragnavik client pack.",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2350",
     "Azumatt-AzuClock-1.1.0",
-    "Neobotics-HUDCompass-1.2.0",
-    "Azumatt-CurrencyPocket-1.0.13"
+    "Neobotics-HUDCompass-1.2.0"
   ]
 }
