@@ -85,8 +85,15 @@ internal sealed class ChangelogModule
             yield break;
         }
         string json = request.downloadHandler.text;
-        if (!TryRender(json, out string rendered)) yield break;
+        if (!TryRender(json, out string rendered))
+        {
+            if (text.StartsWith("Loading Ragnavik", StringComparison.Ordinal))
+                text = "Ragnavik updates are temporarily unavailable.";
+            UpdateBody();
+            yield break;
+        }
         text = rendered;
+        log.LogInfo("Loaded Ragnavik changelog from the website.");
         UpdateBody();
         try
         {
@@ -132,32 +139,34 @@ internal sealed class ChangelogModule
         panel = UnityEngine.Object.Instantiate(startup.m_changeLog, startup.m_changeLog.transform.parent);
         panel.name = "RagnavikChangelogPanel";
         ChangeLog? vanillaComponent = panel.GetComponent<ChangeLog>();
+        body = vanillaComponent?.m_textField;
+        if (vanillaComponent?.m_showPlayerLog != null) vanillaComponent.m_showPlayerLog.SetActive(false);
         if (vanillaComponent != null) UnityEngine.Object.DestroyImmediate(vanillaComponent);
         TMP_Text[] labels = panel.GetComponentsInChildren<TMP_Text>(true);
         foreach (TMP_Text label in labels)
         {
             string name = label.gameObject.name.ToLowerInvariant();
             if (name.Contains("title") || name.Contains("header")) label.text = "Ragnavik Changelog";
-            else if (body == null || label.rectTransform.rect.width * label.rectTransform.rect.height > body.rectTransform.rect.width * body.rectTransform.rect.height) body = label;
         }
         foreach (Button button in panel.GetComponentsInChildren<Button>(true))
         {
             string name = button.gameObject.name.ToLowerInvariant();
             if (!name.Contains("close") && !name.Contains("back")) continue;
-            button.onClick.RemoveAllListeners();
+            button.onClick = new Button.ButtonClickedEvent();
             button.onClick.AddListener(() => panel.SetActive(false));
         }
         panel.SetActive(false);
         menuButton = UnityEngine.Object.Instantiate(startup.m_showChangelogButton, startup.m_showChangelogButton.transform.parent);
         menuButton.name = "RagnavikChangelogButton";
         RectTransform? rect = menuButton.GetComponent<RectTransform>();
-        if (rect != null) rect.anchoredPosition += new Vector2(0f, -48f);
+        if (rect != null) rect.anchoredPosition += new Vector2(0f, 40f);
         Button action = menuButton.GetComponent<Button>();
-        action.onClick.RemoveAllListeners();
+        action.onClick = new Button.ButtonClickedEvent();
         action.onClick.AddListener(() => panel.SetActive(!panel.activeSelf));
         TMP_Text? buttonLabel = menuButton.GetComponentInChildren<TMP_Text>(true);
         if (buttonLabel != null) buttonLabel.text = "Ragnavik Updates";
         UpdateBody();
+        log.LogInfo("Created Ragnavik Updates menu button and changelog panel.");
     }
 
     private void UpdateBody() { if (body != null) body.text = text; }
@@ -171,12 +180,18 @@ internal sealed class ChangelogModule
 
     private void Hide() { if (panel != null) panel.SetActive(false); if (menuButton != null) menuButton.SetActive(false); }
 
+    private void RefreshMenu(FejdStartup startup)
+    {
+        if (startup.m_mainMenu != null && startup.m_mainMenu.activeInHierarchy) Show(startup);
+        else Hide();
+    }
+
     private static class Patches
     {
         [HarmonyPatch(typeof(FejdStartup), "Start"), HarmonyPostfix]
         private static void InitialMenu(FejdStartup __instance) { try { current?.Show(__instance); } catch (Exception error) { current?.log.LogWarning(error); } }
-        [HarmonyPatch(typeof(FejdStartup), "ShowStartGame"), HarmonyPostfix]
-        private static void Show(FejdStartup __instance) { try { current?.Show(__instance); } catch (Exception error) { current?.log.LogWarning(error); } }
+        [HarmonyPatch(typeof(FejdStartup), "Update"), HarmonyPostfix]
+        private static void UpdateMenu(FejdStartup __instance) { current?.RefreshMenu(__instance); }
         [HarmonyPatch(typeof(FejdStartup), "ShowCharacterSelection"), HarmonyPostfix]
         private static void HideCharacters() => current?.Hide();
         [HarmonyPatch(typeof(FejdStartup), "LoadMainScene"), HarmonyPrefix]
