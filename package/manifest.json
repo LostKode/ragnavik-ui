@@ -1,8 +1,8 @@
 {
   "name": "Ragnavik_UI",
-  "version_number": "1.0.3",
+  "version_number": "1.1.0",
   "website_url": "https://ragnavik.vercel.app",
-  "description": "Client UI defaults for Ragnavik's compass and clock presentation.",
+  "description": "Guarded Ragnavik client UI modules with a native main-menu changelog.",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2350",
     "Azumatt-AzuClock-1.1.0",
