@@ -173,6 +173,8 @@ internal sealed class ChangelogModule
 
     private static class Patches
     {
+        [HarmonyPatch(typeof(FejdStartup), "Start"), HarmonyPostfix]
+        private static void InitialMenu(FejdStartup __instance) { try { current?.Show(__instance); } catch (Exception error) { current?.log.LogWarning(error); } }
         [HarmonyPatch(typeof(FejdStartup), "ShowStartGame"), HarmonyPostfix]
         private static void Show(FejdStartup __instance) { try { current?.Show(__instance); } catch (Exception error) { current?.log.LogWarning(error); } }
         [HarmonyPatch(typeof(FejdStartup), "ShowCharacterSelection"), HarmonyPostfix]
