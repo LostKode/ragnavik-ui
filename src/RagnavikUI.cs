@@ -2,7 +2,7 @@ using BepInEx;
 
 namespace RagnavikUI;
 
-[BepInPlugin("lostkode.ragnavik.ui", "Ragnavik UI", "1.0.3")]
+[BepInPlugin("lostkode.ragnavik.ui", "Ragnavik UI", "1.0.4")]
 public sealed class RagnavikUIPlugin : BaseUnityPlugin
 {
     // Inventory controls now retain their owning mods' native placement.
