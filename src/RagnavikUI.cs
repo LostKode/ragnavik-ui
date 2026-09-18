@@ -44,6 +44,7 @@ internal sealed class ChangelogModule
     private bool opened;
     private FejdStartup? menu;
     private readonly Vector3[] corners = new Vector3[4];
+    private Vector3 vanillaPanelPosition;
 
     internal ChangelogModule(BaseUnityPlugin plugin, ConfigFile config, ManualLogSource log)
     {
@@ -145,6 +146,7 @@ internal sealed class ChangelogModule
     {
         if (panel != null || startup.m_changeLog == null || startup.m_showChangelogButton == null) return;
         panel = UnityEngine.Object.Instantiate(startup.m_changeLog, startup.m_changeLog.transform.parent);
+        vanillaPanelPosition = startup.m_changeLog.transform.localPosition;
         panel.name = "RagnavikChangelogPanel";
         ChangeLog? vanillaComponent = panel.GetComponent<ChangeLog>();
         body = vanillaComponent?.m_textField;
@@ -185,7 +187,6 @@ internal sealed class ChangelogModule
         // Keep custom controls out of the original menu's driven layout hierarchy.
         Canvas rootCanvas = originalRect.GetComponentInParent<Canvas>().rootCanvas;
         menuButton.transform.SetParent(rootCanvas.transform, true);
-        panel.transform.SetParent(rootCanvas.transform, true);
         LayoutElement element = menuButton.GetComponent<LayoutElement>() ?? menuButton.AddComponent<LayoutElement>();
         element.ignoreLayout = true;
         RectTransform? rect = menuButton.GetComponent<RectTransform>();
@@ -255,24 +256,29 @@ internal sealed class ChangelogModule
             buttonRect.position = original.position;
             Vector3 newCenter = canvasRect.InverseTransformPoint(newLabel.rectTransform.TransformPoint(newLabel.rectTransform.rect.center));
             Vector3 basePosition = canvasRect.InverseTransformPoint(original.position);
-            buttonRect.localPosition = basePosition + new Vector3(originalCenter.x - newCenter.x, originalCenter.y + gap - newCenter.y, 0f);
+            originalLabel.ForceMeshUpdate();
+            newLabel.ForceMeshUpdate();
+            float originalLeft = canvasRect.InverseTransformPoint(originalLabel.transform.TransformPoint(originalLabel.textBounds.min)).x;
+            float newLeft = canvasRect.InverseTransformPoint(newLabel.transform.TransformPoint(newLabel.textBounds.min)).x;
+            buttonRect.localPosition = basePosition + new Vector3(originalLeft - newLeft, originalCenter.y + gap - newCenter.y, 0f);
         }
-        if (panel != null && panel.activeInHierarchy)
+        if (panel != null)
         {
+            RectTransform vanillaRect = startup.m_changeLog.GetComponent<RectTransform>();
             RectTransform panelRect = panel.GetComponent<RectTransform>();
+            // Preserve the native panel's parent, anchors, dimensions, scale and horizontal position.
+            vanillaRect.localPosition = vanillaPanelPosition;
             buttonRect.GetWorldCorners(corners);
             float buttonTop = canvasRect.InverseTransformPoint(corners[1]).y;
-            float buttonLeft = canvasRect.InverseTransformPoint(corners[0]).x;
             Canvas canvas = canvasRect.GetComponent<Canvas>();
             float margin = 20f / canvas.scaleFactor;
-            float bottom = buttonTop + margin;
-            float height = Mathf.Max(100f, canvasRect.rect.yMax - margin - bottom);
-            float width = Mathf.Min(600f, canvasRect.rect.width - 2f * margin);
-            panelRect.anchorMin = panelRect.anchorMax = Vector2.zero;
-            panelRect.pivot = Vector2.zero;
-            panelRect.localScale = Vector3.one;
-            panelRect.sizeDelta = new Vector2(width, height);
-            panelRect.anchoredPosition = new Vector2(Mathf.Clamp(buttonLeft - canvasRect.rect.xMin, margin, canvasRect.rect.width - width - margin), bottom - canvasRect.rect.yMin);
+            ChangeLog vanilla = startup.m_changeLog.GetComponent<ChangeLog>();
+            RectTransform bounds = vanilla.m_scrollbar != null ? vanilla.m_scrollbar.GetComponent<RectTransform>() : vanillaRect;
+            bounds.GetWorldCorners(corners);
+            float nativeBottom = canvasRect.InverseTransformPoint(corners[0]).y;
+            Vector3 shift = canvasRect.TransformVector(new Vector3(0f, buttonTop + margin - nativeBottom, 0f));
+            vanillaRect.position += shift;
+            panelRect.position = vanillaRect.position;
         }
     }
 
