@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.3
+
+* Remove the TrashItems dependency and trash click integration.
+* Retire the inventory position override so each inventory mod controls its own layout.
+* Preserve the Ragnavik compass and clock presentation.
+
 ## 1.0.2
 
 * Place armor, gold, weight, and trash in four measured rows.
