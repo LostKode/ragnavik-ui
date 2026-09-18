@@ -26,8 +26,11 @@ internal sealed class LoadingScreenModule
     private TMP_Text? sceneTip;
     private float sceneContentChangedAt;
     private Sprite? worldImage;
-    private string worldTip = string.Empty;
+    private GameObject? worldOverlay;
+    private Image? worldBackground;
+    private TMP_Text? worldTipLabel;
     private bool worldLoadingWasVisible;
+    private bool worldProgressWasActive;
     private bool suppressWorldLoadingUntilHidden;
 
     internal LoadingScreenModule(BaseUnityPlugin plugin, ManualLogSource log)
@@ -67,7 +70,7 @@ internal sealed class LoadingScreenModule
     private void SetupSceneLoader(SceneLoader loader)
     {
         if (!content.TryNextImage(out sceneImage) || sceneImage == null) return;
-        Canvas? canvas = loader.GetComponentInChildren<Canvas>(true) ?? loader.GetComponentInParent<Canvas>();
+        Canvas? canvas = FindSceneCanvas(loader);
         if (canvas == null)
         {
             log.LogWarning("Valheim SceneLoader canvas was unavailable; leaving the vanilla startup screen unchanged.");
@@ -96,7 +99,7 @@ internal sealed class LoadingScreenModule
         sceneBackground.raycastTarget = false;
         ApplyImage(sceneBackground, sceneImage);
 
-        TMP_Text? sourceText = loader.GetComponentInChildren<TMP_Text>(true);
+        TMP_Text? sourceText = canvas.GetComponentInChildren<TMP_Text>(true);
         if (sourceText != null && content.TryNextTip(out string tip))
         {
             sceneTip = UnityEngine.Object.Instantiate(sourceText, overlayRect);
@@ -155,6 +158,17 @@ internal sealed class LoadingScreenModule
         rect.offsetMax = Vector2.zero;
     }
 
+    private static Canvas? FindSceneCanvas(SceneLoader loader)
+    {
+        Canvas? best = null;
+        foreach (Canvas candidate in Resources.FindObjectsOfTypeAll<Canvas>())
+        {
+            if (candidate == null || candidate.gameObject.scene != loader.gameObject.scene) continue;
+            if (best == null || candidate.sortingOrder > best.sortingOrder) best = candidate;
+        }
+        return best;
+    }
+
     private void SetupStartup(FejdStartup startup)
     {
         if (startup.m_loading == null) return;
@@ -201,47 +215,103 @@ internal sealed class LoadingScreenModule
         worldLoadingWasVisible = false;
         suppressWorldLoadingUntilHidden = false;
         worldImage = null;
-        worldTip = string.Empty;
-        if (hud.m_loadingImage == null || hud.m_loadingTip == null || hud.m_loadingProgress == null)
+        if (hud.m_loadingScreen == null || hud.m_loadingTip == null || hud.m_loadingProgress == null)
         {
             log.LogWarning("Valheim world loading UI was unavailable; leaving the vanilla screen unchanged.");
             return;
         }
-        SetupIndicator(hud.m_loadingProgress.transform);
+
+        worldOverlay = new GameObject("RagnavikWorldLoading", typeof(RectTransform));
+        RectTransform overlayRect = worldOverlay.GetComponent<RectTransform>();
+        overlayRect.SetParent(hud.m_loadingScreen.transform, false);
+        Stretch(overlayRect);
+        worldOverlay.SetActive(false);
+
+        GameObject blackObject = new("Background", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        RectTransform blackRect = blackObject.GetComponent<RectTransform>();
+        blackRect.SetParent(overlayRect, false);
+        Stretch(blackRect);
+        Image black = blackObject.GetComponent<Image>();
+        black.color = Color.black;
+        black.raycastTarget = false;
+
+        GameObject imageObject = new("Artwork", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        RectTransform imageRect = imageObject.GetComponent<RectTransform>();
+        imageRect.SetParent(overlayRect, false);
+        Stretch(imageRect);
+        worldBackground = imageObject.GetComponent<Image>();
+        worldBackground.raycastTarget = false;
+
+        worldTipLabel = UnityEngine.Object.Instantiate(hud.m_loadingTip, overlayRect);
+        worldTipLabel.name = "RagnavikWorldLoadingTip";
+        foreach (MonoBehaviour component in worldTipLabel.GetComponents<MonoBehaviour>())
+            if (component != worldTipLabel) UnityEngine.Object.DestroyImmediate(component);
+        SetupTip(worldTipLabel);
+        worldTipLabel.gameObject.SetActive(true);
+
+        if (indicatorSprite != null)
+        {
+            GameObject marker = new("RagnavikWorldLoadingIndicator", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(FjordGateActivity));
+            RectTransform markerRect = marker.GetComponent<RectTransform>();
+            markerRect.SetParent(overlayRect, false);
+            markerRect.anchorMin = markerRect.anchorMax = new Vector2(0.5f, 0f);
+            markerRect.pivot = new Vector2(0.5f, 0f);
+            markerRect.anchoredPosition = new Vector2(0f, 36f);
+            markerRect.sizeDelta = new Vector2(88f, 88f);
+            Image markerImage = marker.GetComponent<Image>();
+            markerImage.sprite = indicatorSprite;
+            markerImage.preserveAspect = true;
+            markerImage.raycastTarget = false;
+        }
+
+        restorations.Add(() =>
+        {
+            if (worldOverlay != null) UnityEngine.Object.Destroy(worldOverlay);
+            worldOverlay = null;
+            worldBackground = null;
+            worldTipLabel = null;
+        });
+        log.LogInfo("Prepared the Ragnavik full world-entry loading overlay.");
     }
 
     private void UpdateWorld(Hud hud)
     {
-        if (hud.m_loadingScreen == null || hud.m_loadingImage == null || hud.m_loadingTip == null) return;
-        bool visible = hud.m_loadingScreen.gameObject.activeInHierarchy && hud.m_loadingImage.gameObject.activeInHierarchy;
+        if (hud.m_loadingScreen == null || hud.m_loadingProgress == null || worldOverlay == null || worldBackground == null) return;
+        bool visible = hud.m_loadingScreen.gameObject.activeInHierarchy && hud.m_loadingScreen.alpha > 0.01f;
         bool teleporting = Player.m_localPlayer != null && Player.m_localPlayer.ShowTeleportAnimation();
 
         if (teleporting)
         {
             suppressWorldLoadingUntilHidden = true;
+            worldOverlay.SetActive(false);
             worldLoadingWasVisible = false;
             return;
         }
         if (suppressWorldLoadingUntilHidden)
         {
+            worldOverlay.SetActive(false);
             if (!visible) suppressWorldLoadingUntilHidden = false;
             return;
         }
         if (!visible)
         {
+            worldOverlay.SetActive(false);
+            if (worldLoadingWasVisible) hud.m_loadingProgress.SetActive(worldProgressWasActive);
             worldLoadingWasVisible = false;
             return;
         }
 
         if (!worldLoadingWasVisible)
         {
+            worldProgressWasActive = hud.m_loadingProgress.activeSelf;
             if (content.TryNextImage(out Sprite? nextImage)) worldImage = nextImage;
-            if (content.TryNextTip(out string nextTip)) worldTip = nextTip;
+            if (worldTipLabel != null && content.TryNextTip(out string nextTip)) worldTipLabel.text = nextTip;
         }
         worldLoadingWasVisible = true;
-
-        if (worldImage != null) ApplyImage(hud.m_loadingImage, worldImage);
-        if (worldTip.Length > 0) hud.m_loadingTip.text = worldTip;
+        hud.m_loadingProgress.SetActive(false);
+        worldOverlay.SetActive(true);
+        worldOverlay.transform.SetAsLastSibling();
+        if (worldImage != null) ApplyImage(worldBackground, worldImage);
     }
 
     private static void SetupTip(TMP_Text tip)
@@ -319,7 +389,7 @@ internal sealed class LoadingScreenModule
 
     private static class Patches
     {
-        [HarmonyPatch(typeof(SceneLoader), "Start"), HarmonyPrefix]
+        [HarmonyPatch(typeof(SceneLoader), "Start"), HarmonyPostfix]
         private static void SceneLoaderStart(SceneLoader __instance)
         {
             try { current?.SetupSceneLoader(__instance); }
