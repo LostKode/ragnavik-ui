@@ -2,7 +2,7 @@
   "name": "Ragnavik_UI",
   "version_number": "1.1.0",
   "website_url": "https://ragnavik.vercel.app",
-  "description": "Guarded Ragnavik client UI modules with a separate website backed changelog.",
+  "description": "Ragnavik interface modules and presentation for the Ragnavik client pack.",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2350",
     "Azumatt-AzuClock-1.1.0",
