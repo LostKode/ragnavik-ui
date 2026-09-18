@@ -6,7 +6,6 @@
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2350",
     "Azumatt-AzuClock-1.1.0",
-    "Neobotics-HUDCompass-1.2.0",
-    "Azumatt-CurrencyPocket-1.0.13"
+    "Neobotics-HUDCompass-1.2.0"
   ]
 }
