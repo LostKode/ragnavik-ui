@@ -2,6 +2,7 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.IO;
@@ -117,8 +118,12 @@ internal sealed class ChangelogModule
         rendered = string.Empty;
         try
         {
-            ChangelogFeed? feed = JsonUtility.FromJson<ChangelogFeed>(json);
-            if (feed == null || feed.schemaVersion != 1 || feed.entries == null || feed.entries.Length == 0) return false;
+            ChangelogFeed? feed = JsonConvert.DeserializeObject<ChangelogFeed>(json);
+            if (feed == null || feed.schemaVersion != 1 || feed.entries == null || feed.entries.Length == 0)
+            {
+                log.LogWarning($"Changelog schema rejected: version={feed?.schemaVersion}, entries={feed?.entries?.Length}, response length={json.Length}");
+                return false;
+            }
             StringBuilder builder = new();
             foreach (ChangelogEntry entry in feed.entries)
             {
@@ -145,7 +150,7 @@ internal sealed class ChangelogModule
         foreach (TMP_Text label in labels)
         {
             string name = label.gameObject.name.ToLowerInvariant();
-            if (name.Contains("title") || name.Contains("header")) label.text = "Ragnavik Changelog";
+            if (label != body && (name.Contains("title") || name.Contains("header") || label.text.Contains("$menu_changelog") || label.text == "Changelog")) label.text = "Ragnavik Changelog";
         }
         foreach (Button button in panel.GetComponentsInChildren<Button>(true))
         {
@@ -168,6 +173,8 @@ internal sealed class ChangelogModule
         if (float.IsPositiveInfinity(linkSpacing)) linkSpacing = originalRect.rect.height;
         menuButton = UnityEngine.Object.Instantiate(startup.m_showChangelogButton, startup.m_showChangelogButton.transform.parent);
         menuButton.name = "RagnavikChangelogButton";
+        LayoutElement element = menuButton.GetComponent<LayoutElement>() ?? menuButton.AddComponent<LayoutElement>();
+        element.ignoreLayout = true;
         RectTransform? rect = menuButton.GetComponent<RectTransform>();
         // Layout groups position children by sibling order and overwrite manual offsets.
         menuButton.transform.SetSiblingIndex(originalRect.GetSiblingIndex());
@@ -202,12 +209,27 @@ internal sealed class ChangelogModule
         else Hide();
     }
 
+    private void PositionLink(FejdStartup startup)
+    {
+        if (menuButton == null) return;
+        RectTransform original = startup.m_showChangelogButton.GetComponent<RectTransform>();
+        float gap = float.PositiveInfinity;
+        foreach (Transform sibling in original.parent)
+        {
+            if (sibling == original || sibling == menuButton.transform || !sibling.gameObject.activeSelf || sibling.GetComponent<Button>() == null) continue;
+            float distance = original.localPosition.y - sibling.localPosition.y;
+            if (distance > 0f && distance < gap) gap = distance;
+        }
+        if (!float.IsPositiveInfinity(gap))
+            menuButton.transform.localPosition = original.localPosition + new Vector3(0f, gap, 0f);
+    }
+
     private static class Patches
     {
         [HarmonyPatch(typeof(FejdStartup), "Start"), HarmonyPostfix]
         private static void InitialMenu(FejdStartup __instance) { try { current?.Show(__instance); } catch (Exception error) { current?.log.LogWarning(error); } }
         [HarmonyPatch(typeof(FejdStartup), "Update"), HarmonyPostfix]
-        private static void UpdateMenu(FejdStartup __instance) { current?.RefreshMenu(__instance); }
+        private static void UpdateMenu(FejdStartup __instance) { current?.RefreshMenu(__instance); current?.PositionLink(__instance); }
         [HarmonyPatch(typeof(FejdStartup), "ShowCharacterSelection"), HarmonyPostfix]
         private static void HideCharacters() => current?.Hide();
         [HarmonyPatch(typeof(FejdStartup), "LoadMainScene"), HarmonyPrefix]

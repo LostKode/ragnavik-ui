@@ -7,6 +7,7 @@
     <OutputType>Library</OutputType>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json" HintPath="$(ValheimManagedDir)/Newtonsoft.Json.dll" Private="false" />
     <Reference Include="assembly_valheim" HintPath="$(ValheimManagedDir)/assembly_valheim.dll" />
     <Reference Include="UnityEngine" HintPath="$(ValheimManagedDir)/UnityEngine.dll" />
     <Reference Include="UnityEngine.CoreModule" HintPath="$(ValheimManagedDir)/UnityEngine.CoreModule.dll" />
