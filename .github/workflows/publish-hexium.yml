@@ -1,0 +1,99 @@
+name: Publish to Hexium
+run-name: Hexium automatic release ${{ github.run_id }}
+
+on:
+  push:
+    branches: [main]
+    paths: ["package/manifest.json", ".github/workflows/publish-hexium.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hexium-ragnavik-ui
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ${{ vars.RELEASE_RUNNER || 'ubuntu-latest' }}
+    environment: hexium-production
+    env:
+      VALHEIM_MANAGED_DIR: ${{ vars.VALHEIM_MANAGED_DIR }}
+      BEPINEX_CORE_DIR: ${{ vars.BEPINEX_CORE_DIR }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Resolve release metadata
+        run: |
+          version=$(python3 -c 'import json; print(json.load(open("package/manifest.json"))["version_number"])')
+          echo "EXPECTED_VERSION=$version" >> "$GITHUB_ENV"
+          echo "PACKAGE=artifacts/LostKode-Ragnavik_UI-$version.zip" >> "$GITHUB_ENV"
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - name: Resolve build references
+        shell: bash
+        run: |
+          if [[ -d "${VALHEIM_MANAGED_DIR:-}" && -d "${BEPINEX_CORE_DIR:-}" ]]; then
+            echo "Using build references provided by the runner."
+            exit 0
+          fi
+          install_root="$RUNNER_TEMP/ragnavik-build-references"
+          mkdir -p "$install_root/valheim" "$install_root/bepinex"
+          docker run --rm --volume "$install_root/valheim:/data" steamcmd/steamcmd:ubuntu-22 \
+            +force_install_dir /data +login anonymous +app_update 896660 validate +quit
+          curl --fail --location --retry 3 \
+            https://thunderstore.io/package/download/denikson/BepInExPack_Valheim/5.4.2350/ \
+            --output "$install_root/bepinex.zip"
+          unzip -q "$install_root/bepinex.zip" -d "$install_root/bepinex"
+          managed_dir=$(find "$install_root/valheim" -type d -path '*/valheim_server_Data/Managed' -print -quit)
+          bepinex_dir=$(find "$install_root/bepinex" -type d -path '*/BepInEx/core' -print -quit)
+          test -n "$managed_dir"
+          test -n "$bepinex_dir"
+          echo "VALHEIM_MANAGED_DIR=$managed_dir" >> "$GITHUB_ENV"
+          echo "BEPINEX_CORE_DIR=$bepinex_dir" >> "$GITHUB_ENV"
+      - name: Build package
+        run: |
+          ./scripts/validate.sh
+          ./scripts/package.sh
+      - run: dotnet tool restore
+      - name: Prepare Hexium release metadata
+        run: >-
+          python3 scripts/hexium_publish.py prepare
+          --manifest package/manifest.json
+          --package "$PACKAGE"
+          --expected-version "$EXPECTED_VERSION"
+          --release-id "${{ github.run_id }}"
+          --repository https://hexium.gg
+          --category "Client-side" --category Mods --category Utility --category "Valheim 1.0"
+          --output .tcli/hexium.toml
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LostKode-Ragnavik_UI-${{ env.EXPECTED_VERSION }}
+          path: ${{ env.PACKAGE }}
+          if-no-files-found: error
+      - name: Check public release state
+        run: |
+          public_version=$(python3 scripts/hexium_publish.py current --name Ragnavik_UI)
+          if [[ -z "$public_version" ]]; then
+            echo "PUBLISH_REQUIRED=true" >> "$GITHUB_ENV"
+          elif [[ "$public_version" == "$EXPECTED_VERSION" ]]; then
+            echo "PUBLISH_REQUIRED=false" >> "$GITHUB_ENV"
+          elif [[ "$(printf '%s\n%s\n' "$public_version" "$EXPECTED_VERSION" | sort -V | tail -n 1)" == "$EXPECTED_VERSION" ]]; then
+            echo "PUBLISH_REQUIRED=true" >> "$GITHUB_ENV"
+          else
+            echo "Expected $EXPECTED_VERSION but Hexium already exposes newer version $public_version" >&2
+            exit 1
+          fi
+      - name: Require Hexium token for publication
+        if: env.PUBLISH_REQUIRED == 'true'
+        env:
+          HEXIUM_AUTH_TOKEN: ${{ secrets.HEXIUM_AUTH_TOKEN }}
+        run: test -n "$HEXIUM_AUTH_TOKEN"
+      - name: Publish package
+        if: env.PUBLISH_REQUIRED == 'true'
+        env:
+          HEXIUM_AUTH_TOKEN: ${{ secrets.HEXIUM_AUTH_TOKEN }}
+        run: dotnet tool run tcli publish --config-path .tcli/hexium.toml --file "$PACKAGE" --token "$HEXIUM_AUTH_TOKEN"
+      - name: Verify public package
+        run: python3 scripts/hexium_publish.py verify --repository https://hexium.gg --name Ragnavik_UI --version "$EXPECTED_VERSION"
