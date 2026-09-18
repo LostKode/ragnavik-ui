@@ -40,8 +40,14 @@ jobs:
           fi
           install_root="$RUNNER_TEMP/ragnavik-build-references"
           mkdir -p "$install_root/valheim" "$install_root/bepinex"
-          docker run --rm --volume "$install_root/valheim:/data" steamcmd/steamcmd:ubuntu-22 \
-            +force_install_dir /data +login anonymous +app_update 896660 validate +quit
+          docker run --rm \
+            --volume "$install_root/valheim:/data" \
+            steamcmd/steamcmd:ubuntu-22 \
+            +force_install_dir /data \
+            +@sSteamCmdForcePlatformType windows \
+            +login anonymous \
+            +app_update 896660 validate \
+            +quit
           curl --fail --location --retry 3 \
             https://thunderstore.io/package/download/denikson/BepInExPack_Valheim/5.4.2350/ \
             --output "$install_root/bepinex.zip"
