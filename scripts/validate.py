@@ -7,6 +7,7 @@ import sys
 root = pathlib.Path(__file__).resolve().parent.parent
 manifest_path = root / "package/manifest.json"
 source_path = root / "src/RagnavikUI.cs"
+tool_manifest_path = root / ".config/dotnet-tools.json"
 errors: list[str] = []
 
 manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -37,6 +38,14 @@ required_files = [
 for path in required_files:
     if not path.is_file() or path.stat().st_size == 0:
         errors.append(f"required package asset missing or empty: {path.relative_to(root)}")
+
+if not tool_manifest_path.is_file():
+    errors.append("Hexium publishing requires .config/dotnet-tools.json")
+else:
+    tool_manifest = json.loads(tool_manifest_path.read_text(encoding="utf-8"))
+    tcli = tool_manifest.get("tools", {}).get("tcli", {})
+    if tcli.get("version") != "0.2.4" or "tcli" not in tcli.get("commands", []):
+        errors.append("dotnet tool manifest must provide tcli 0.2.4 for Hexium publishing")
 
 if errors:
     print("validation failed:", file=sys.stderr)
