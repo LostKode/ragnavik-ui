@@ -15,7 +15,7 @@ using UnityEngine.UI;
 
 namespace RagnavikUI;
 
-[BepInPlugin("lostkode.ragnavik.ui", "Ragnavik UI", "1.2.5")]
+[BepInPlugin("lostkode.ragnavik.ui", "Ragnavik UI", "1.2.6")]
 public sealed class RagnavikUIPlugin : BaseUnityPlugin
 {
     internal const string PluginGuid = "lostkode.ragnavik.ui";
@@ -66,6 +66,9 @@ internal sealed class ChangelogModule
     private ScrollRect? panelScroll;
     private bool resetScrollToTop;
     private Sprite? ragnavikLogo;
+    private Image? menuLogoImage;
+    private bool logoLoadAttempted;
+    private bool logoNotFoundLogged;
     private Sprite? discordLogo;
     private Sprite? supportLogo;
     private GameObject? communityPanel;
@@ -191,7 +194,6 @@ internal sealed class ChangelogModule
     private void EnsureUi(FejdStartup startup)
     {
         if (panel != null || GetChangeLog(startup) == null || GetShowChangelogButton(startup) == null) return;
-        ReplaceLogo(startup);
         EnsureCommunityPanel(startup);
         panel = UnityEngine.Object.Instantiate(GetChangeLog(startup), GetChangeLog(startup).transform.parent);
         vanillaPanelAnchoredY = GetChangeLog(startup).GetComponent<RectTransform>().anchoredPosition.y;
@@ -270,6 +272,7 @@ internal sealed class ChangelogModule
 
     private void Show(FejdStartup startup)
     {
+        EnsureLogo(startup);
         EnsureUi(startup);
         menuButton?.SetActive(true);
         if (autoOpen.Value && !opened && panel != null)
@@ -359,42 +362,69 @@ internal sealed class ChangelogModule
         }
     }
 
-    private void ReplaceLogo(FejdStartup startup)
+    private void EnsureLogo(FejdStartup startup)
     {
-        if (ragnavikLogo != null) return;
-        string pluginDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? Paths.PluginPath;
-        string logoPath = Path.Combine(pluginDirectory, "ragnavik-fjord-gate.png");
-        if (!File.Exists(logoPath))
+        if (ragnavikLogo == null && !logoLoadAttempted)
         {
-            log.LogWarning($"Ragnavik menu logo was not found at {logoPath}.");
-            return;
-        }
-        try
-        {
-            Texture2D texture = new(2, 2, TextureFormat.RGBA32, false);
-            if (!ImageConversion.LoadImage(texture, File.ReadAllBytes(logoPath), false))
+            logoLoadAttempted = true;
+            string pluginDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? Paths.PluginPath;
+            string logoPath = Path.Combine(pluginDirectory, "ragnavik-fjord-gate.png");
+            if (!File.Exists(logoPath))
             {
-                UnityEngine.Object.Destroy(texture);
-                log.LogWarning("Ragnavik menu logo could not be decoded.");
+                log.LogWarning($"Ragnavik menu logo was not found at {logoPath}.");
                 return;
             }
-            texture.name = "RagnavikFjordGateLogo";
-            ragnavikLogo = Sprite.Create(texture, new Rect(0f, 0f, texture.width, texture.height), new Vector2(0.5f, 0.5f), 100f);
+            try
+            {
+                Texture2D texture = new(2, 2, TextureFormat.RGBA32, false);
+                if (!ImageConversion.LoadImage(texture, File.ReadAllBytes(logoPath), false))
+                {
+                    UnityEngine.Object.Destroy(texture);
+                    log.LogWarning("Ragnavik menu logo could not be decoded.");
+                    return;
+                }
+                texture.name = "RagnavikFjordGateLogo";
+                ragnavikLogo = Sprite.Create(texture, new Rect(0f, 0f, texture.width, texture.height), new Vector2(0.5f, 0.5f), 100f);
+            }
+            catch (Exception error)
+            {
+                log.LogWarning($"Could not load the Ragnavik menu logo: {error.Message}");
+                return;
+            }
+        }
+        if (ragnavikLogo == null) return;
+
+        try
+        {
             foreach (Image image in startup.GetComponentsInChildren<Image>(true))
             {
                 if (!image.gameObject.name.Equals("Logo DeepNorth1 .0", StringComparison.OrdinalIgnoreCase)) continue;
-                image.sprite = ragnavikLogo;
-                image.preserveAspect = true;
-                image.rectTransform.localScale *= 0.52f;
-                Vector2 logoPosition = image.rectTransform.anchoredPosition;
-                logoPosition.y -= image.rectTransform.rect.height * 0.15f;
-                image.rectTransform.anchoredPosition = logoPosition;
-                log.LogInfo("Replaced the Valheim menu logo with the Ragnavik Fjord Gate logo.");
+                bool newLogoObject = menuLogoImage != image;
+                bool restoredSprite = image.sprite != ragnavikLogo;
+                if (newLogoObject)
+                {
+                    menuLogoImage = image;
+                    image.preserveAspect = true;
+                    image.rectTransform.localScale *= 0.52f;
+                    Vector2 logoPosition = image.rectTransform.anchoredPosition;
+                    logoPosition.y -= image.rectTransform.rect.height * 0.15f;
+                    image.rectTransform.anchoredPosition = logoPosition;
+                }
+                if (restoredSprite) image.sprite = ragnavikLogo;
+                if (newLogoObject || restoredSprite)
+                    log.LogInfo(newLogoObject
+                        ? "Applied the Ragnavik Fjord Gate menu logo."
+                        : "Restored the Ragnavik Fjord Gate menu logo after a menu transition.");
+                logoNotFoundLogged = false;
                 return;
             }
-            log.LogWarning("Valheim menu logo object was not found.");
+            if (!logoNotFoundLogged)
+            {
+                log.LogWarning("Valheim menu logo object was not found.");
+                logoNotFoundLogged = true;
+            }
         }
-        catch (Exception error) { log.LogWarning($"Could not replace the Valheim menu logo: {error.Message}"); }
+        catch (Exception error) { log.LogWarning($"Could not apply the Ragnavik menu logo: {error.Message}"); }
     }
 
     private void EnsureCommunityPanel(FejdStartup startup)
