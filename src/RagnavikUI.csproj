@@ -10,7 +10,8 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" IncludeAssets="compile" PrivateAssets="all" />
     <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.3" PrivateAssets="all" />
     <Reference Include="gui_framework" HintPath="$(ValheimManagedDir)/gui_framework.dll" />
-    <Reference Include="assembly_valheim" HintPath="$(ValheimManagedDir)/assembly_valheim.dll" Publicize="true" />
+    <Reference Include="assembly_valheim" HintPath="$(ValheimManagedDir)/assembly_valheim.dll" />
+    <Publicize Include="assembly_valheim" />
     <Reference Include="assembly_utils" HintPath="$(ValheimManagedDir)/assembly_utils.dll" />
     <Reference Include="UnityEngine" HintPath="$(ValheimManagedDir)/UnityEngine.dll" />
     <Reference Include="UnityEngine.CoreModule" HintPath="$(ValheimManagedDir)/UnityEngine.CoreModule.dll" />
