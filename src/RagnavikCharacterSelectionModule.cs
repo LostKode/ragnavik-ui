@@ -63,6 +63,7 @@ internal sealed class RagnavikCharacterSelectionModule
         SelectedProfile = null;
         SelectedEnvironment = null;
         ApplyFilter(startup, null);
+        Traverse.Create(startup).Method("UpdateCharacterList").GetValue();
     }
 
     private void ApplyFilter(FejdStartup startup, string? selectFilename)

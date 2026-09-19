@@ -2,6 +2,7 @@
 
 | Version | Changes |
 | --- | --- |
+| 1.2.2 | Refresh the filtered character screen immediately so an environment with no matching character opens on the new-character state instead of showing a stale preview. |
 | 1.2.1 | Block entry when no environment-owned character is selected, require character and direct-entry environments to match, and integrate the protected direct-entry flow. |
 | 1.2.0 | Isolate production and local test character selection with Ragnavik-owned filenames and identity-checked registries while leaving existing Valheim characters untouched. |
 | 1.1.1 | Update the AzuClock dependency to 1.1.1. |
