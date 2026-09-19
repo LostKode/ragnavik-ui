@@ -15,7 +15,7 @@ using UnityEngine.UI;
 
 namespace RagnavikUI;
 
-[BepInPlugin("lostkode.ragnavik.ui", "Ragnavik UI", "1.2.5")]
+[BepInPlugin("lostkode.ragnavik.ui", "Ragnavik UI", "1.2.4")]
 public sealed class RagnavikUIPlugin : BaseUnityPlugin
 {
     internal const string PluginGuid = "lostkode.ragnavik.ui";
@@ -26,9 +26,9 @@ public sealed class RagnavikUIPlugin : BaseUnityPlugin
     private void Awake()
     {
         try { characterSelection = new RagnavikCharacterSelectionModule(Logger); characterSelection.Start(); }
-        catch (Exception error) { Logger.LogError( Ragnavik character selector disabled: {error}"); characterSelection?.Stop(); }
+        catch (Exception error) { Logger.LogError($"Ragnavik character selector disabled: {error}"); characterSelection?.Stop(); }
         try { loadingScreens = new LoadingScreenModule(this, Logger); loadingScreens.Start(); }
-        catch (Exception error) { Logger.LogError( Loading screen module disabled: {error}"); loadingScreens?.Stop(); }
+        catch (Exception error) { Logger.LogError($"Loading screen module disabled: {error}"); loadingScreens?.Stop(); }
         try { changelog = new ChangelogModule(this, Config, Logger); changelog.Start(); }
         catch (Exception error) { Logger.LogError($"Changelog module disabled: {error}"); changelog?.Stop(); }
         try { directEntry = new DirectEntryModule(Logger); directEntry.Start(); }
