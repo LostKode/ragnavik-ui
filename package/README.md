@@ -18,6 +18,10 @@ Ragnavik UI does not replace teleport loading screens. TargetPortal and Valheim 
 
 ## Changelog
 
+### 1.2.5
+
+* Preserve the changelog panel, community links, and local Test world selection while resolving Valheim private fields dynamically.
+
 ### 1.2.4
 
 * Add randomized loading art and tips for startup and initial world or server entry.
