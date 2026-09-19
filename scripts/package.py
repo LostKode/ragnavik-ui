@@ -52,6 +52,10 @@ def main() -> int:
         (package_dir / "config/Azumatt.AzuClock.cfg", "config/Azumatt.AzuClock.cfg"),
         (dll_path, "plugins/RagnavikUI/RagnavikUI.dll"),
     ]
+    loading_dir = package_dir / "loading"
+    files.extend(
+        (path, f"plugins/RagnavikUI/loading/{path.name}") for path in loading_dir.glob("*") if path.is_file()
+    )
     missing = [str(path) for path, _ in files if not path.is_file()]
     if missing:
         raise SystemExit("missing package inputs: " + ", ".join(missing))

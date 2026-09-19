@@ -15,23 +15,32 @@ using UnityEngine.UI;
 
 namespace RagnavikUI;
 
-[BepInPlugin("lostkode.ragnavik.ui", "Ragnavik UI", "1.2.3")]
+[BepInPlugin("lostkode.ragnavik.ui", "Ragnavik UI", "1.2.4")]
 public sealed class RagnavikUIPlugin : BaseUnityPlugin
 {
     internal const string PluginGuid = "lostkode.ragnavik.ui";
     private ChangelogModule? changelog;
     private DirectEntryModule? directEntry;
     private RagnavikCharacterSelectionModule? characterSelection;
+    private LoadingScreenModule? loadingScreens;
     private void Awake()
     {
         try { characterSelection = new RagnavikCharacterSelectionModule(Logger); characterSelection.Start(); }
         catch (Exception error) { Logger.LogError($"Ragnavik character selector disabled: {error}"); characterSelection?.Stop(); }
+        try { loadingScreens = new LoadingScreenModule(this, Logger); loadingScreens.Start(); }
+        catch (Exception error) { Logger.LogError($"Loading screen module disabled: {error}"); loadingScreens?.Stop(); }
         try { changelog = new ChangelogModule(this, Config, Logger); changelog.Start(); }
         catch (Exception error) { Logger.LogError($"Changelog module disabled: {error}"); changelog?.Stop(); }
         try { directEntry = new DirectEntryModule(Logger); directEntry.Start(); }
         catch (Exception error) { Logger.LogError($"Direct entry module disabled: {error.Message}"); directEntry?.Stop(); }
     }
-    private void OnDestroy() { directEntry?.Stop(); changelog?.Stop(); characterSelection?.Stop(); }
+    private void OnDestroy()
+    {
+        directEntry?.Stop();
+        changelog?.Stop();
+        characterSelection?.Stop();
+        loadingScreens?.Stop();
+    }
 }
 
 internal sealed class ChangelogModule

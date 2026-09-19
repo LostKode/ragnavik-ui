@@ -2,6 +2,7 @@
 
 | Version | Changes |
 | --- | --- |
+| 1.2.4 | Add branded full-screen loading art and randomized tips across startup, menu-to-world transition, and initial world entry. Replace visible vanilla loaders with the animated Fjord Gate activity mark at the approved position, keep it above tips throughout each phase, and leave teleport loading screens under their existing owner. Package eight loading images and 44 tips. |
 | 1.2.3 | Show only the character's chosen name in the Ragnavik selector while retaining the private environment-specific storage identifier used to isolate Test and Production characters. |
 | 1.2.2 | Refresh the filtered character screen immediately so an environment with no matching character opens on the new-character state instead of showing a stale preview. |
 | 1.2.1 | Block entry when no environment-owned character is selected, require character and direct-entry environments to match, and integrate the protected direct-entry flow. |

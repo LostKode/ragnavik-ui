@@ -21,6 +21,9 @@ jobs:
     env:
       VALHEIM_MANAGED_DIR: ${{ vars.VALHEIM_MANAGED_DIR }}
       BEPINEX_CORE_DIR: ${{ vars.BEPINEX_CORE_DIR }}
+      RAGNAVIK_ENTRY_ENVIRONMENT: Production
+      RAGNAVIK_SERVER_ADDRESS: ${{ secrets.RAGNAVIK_SERVER_ADDRESS }}
+      RAGNAVIK_SERVER_PORT: ${{ secrets.RAGNAVIK_SERVER_PORT }}
     steps:
       - uses: actions/checkout@v4
       - name: Resolve release metadata

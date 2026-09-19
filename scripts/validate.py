@@ -37,6 +37,21 @@ required_files = [
     root / "package/character-environment.env",
     root / "package/config/Azumatt.AzuClock.cfg",
 ]
+loading_dir = root / "package/loading"
+loading_images = sorted(loading_dir.glob("*.png"))
+if len(loading_images) != 8:
+    errors.append(f"package/loading must contain exactly 8 PNG images, found {len(loading_images)}")
+expected_images = {f"0{index}-{name}.png" for index, name in enumerate([
+    "meadow-homestead", "winter-harbor", "storm-voyage", "ancient-forest",
+    "autumn-river", "highland-ruins", "misty-cove", "harvest-settlement",
+], start=1)}
+if {path.name for path in loading_images} != expected_images:
+    errors.append("package/loading image names do not match the authoritative eight-image set")
+tips_path = loading_dir / "tips.txt"
+if not tips_path.is_file():
+    errors.append("package/loading/tips.txt is required")
+elif len([line for line in tips_path.read_text(encoding="utf-8").splitlines() if line.strip()]) != 44:
+    errors.append("package/loading/tips.txt must contain exactly 44 non-empty tips")
 for path in required_files:
     if not path.is_file() or path.stat().st_size == 0:
         errors.append(f"required package asset missing or empty: {path.relative_to(root)}")
