@@ -159,6 +159,17 @@ internal sealed class RagnavikCharacterSelectionModule
         return true;
     }
 
+    private void ShowDisplayName(FejdStartup startup)
+    {
+        if (!selectorActive || !Ready) return;
+        List<PlayerProfile> profiles = GetProfiles(startup);
+        int profileIndex = GetProfileIndex(startup);
+        if (profileIndex < 0 || profileIndex >= profiles.Count) return;
+        PlayerProfile profile = profiles[profileIndex];
+        if (!registry!.Owns(profile, environment!.Value)) return;
+        startup.m_csName.text = profile.GetName();
+    }
+
     private static List<PlayerProfile> GetProfiles(FejdStartup startup) => Traverse.Create(startup).Field("m_profiles").GetValue<List<PlayerProfile>>() ?? new List<PlayerProfile>();
     private static int GetProfileIndex(FejdStartup startup) => Traverse.Create(startup).Field("m_profileIndex").GetValue<int>();
 
@@ -204,6 +215,9 @@ internal sealed class RagnavikCharacterSelectionModule
 
         [HarmonyPatch(typeof(FejdStartup), nameof(FejdStartup.OnCharacterStart)), HarmonyPrefix]
         private static bool CaptureSelection(FejdStartup __instance) => current?.SelectForHandoff(__instance) ?? true;
+
+        [HarmonyPatch(typeof(FejdStartup), "UpdateCharacterList"), HarmonyPostfix]
+        private static void HideStorageIdentifier(FejdStartup __instance) => current?.ShowDisplayName(__instance);
 
         [HarmonyPatch(typeof(FejdStartup), "OnSelelectCharacterBack"), HarmonyPostfix]
         private static void LeaveSelector()
