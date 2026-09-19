@@ -184,18 +184,22 @@ internal sealed class ChangelogModule
         catch (Exception error) { log.LogWarning($"Website changelog response was invalid: {error.Message}"); return false; }
     }
 
+    private static GameObject? GetChangeLog(FejdStartup startup) => Traverse.Create(startup).Field<GameObject>("m_changeLog").Value;
+    private static GameObject? GetShowChangelogButton(FejdStartup startup) => Traverse.Create(startup).Field<GameObject>("m_showChangelogButton").Value;
+    private static GameObject? GetMerchStoreButtonParent(FejdStartup startup) => Traverse.Create(startup).Field<GameObject>("m_merchStoreButtonParent").Value;
+
     private void EnsureUi(FejdStartup startup)
     {
-        if (panel != null || startup.m_changeLog == null || startup.m_showChangelogButton == null) return;
+        if (panel != null || GetChangeLog(startup) == null || GetShowChangelogButton(startup) == null) return;
         ReplaceLogo(startup);
         EnsureCommunityPanel(startup);
-        panel = UnityEngine.Object.Instantiate(startup.m_changeLog, startup.m_changeLog.transform.parent);
-        vanillaPanelAnchoredY = startup.m_changeLog.GetComponent<RectTransform>().anchoredPosition.y;
+        panel = UnityEngine.Object.Instantiate(GetChangeLog(startup), GetChangeLog(startup).transform.parent);
+        vanillaPanelAnchoredY = GetChangeLog(startup).GetComponent<RectTransform>().anchoredPosition.y;
         panel.name = "RagnavikChangelogPanel";
         panelScroll = panel.GetComponentInChildren<ScrollRect>(true);
         ChangeLog? vanillaComponent = panel.GetComponent<ChangeLog>();
         body = vanillaComponent?.m_textField;
-        TMP_Text? originalBody = startup.m_changeLog.GetComponent<ChangeLog>()?.m_textField;
+        TMP_Text? originalBody = GetChangeLog(startup).GetComponent<ChangeLog>()?.m_textField;
         if (body != null && originalBody != null)
         {
             body.enableAutoSizing = false;
@@ -216,8 +220,8 @@ internal sealed class ChangelogModule
             button.onClick.AddListener(() => panel.SetActive(false));
         }
         panel.SetActive(false);
-        RectTransform originalRect = startup.m_showChangelogButton.GetComponent<RectTransform>();
-        menuButton = UnityEngine.Object.Instantiate(startup.m_showChangelogButton, startup.m_showChangelogButton.transform.parent);
+        RectTransform originalRect = GetShowChangelogButton(startup).GetComponent<RectTransform>();
+        menuButton = UnityEngine.Object.Instantiate(GetShowChangelogButton(startup), GetShowChangelogButton(startup).transform.parent);
         menuButton.name = "RagnavikChangelogButton";
         // Use Valheim's native vertical group for placement, spacing, and menu fading.
         menuButton.transform.SetSiblingIndex(originalRect.GetSiblingIndex());
@@ -231,7 +235,7 @@ internal sealed class ChangelogModule
         action.onClick.AddListener(() =>
         {
             bool show = !panel.activeSelf;
-            startup.m_changeLog.SetActive(false);
+            GetChangeLog(startup).SetActive(false);
             panel.SetActive(show);
             if (show) resetScrollToTop = true;
         });
@@ -270,7 +274,7 @@ internal sealed class ChangelogModule
         menuButton?.SetActive(true);
         if (autoOpen.Value && !opened && panel != null)
         {
-            startup.m_changeLog.SetActive(false);
+            GetChangeLog(startup).SetActive(false);
             panel.SetActive(true);
             resetScrollToTop = true;
             opened = true;
@@ -294,7 +298,7 @@ internal sealed class ChangelogModule
         if (menuButton == null || menu == null || !menuButton.activeInHierarchy) return;
         ResetPanelScroll();
         FejdStartup startup = menu;
-        RectTransform originalButton = startup.m_showChangelogButton.GetComponent<RectTransform>();
+        RectTransform originalButton = GetShowChangelogButton(startup).GetComponent<RectTransform>();
         RectTransform customButton = menuButton.GetComponent<RectTransform>();
         TMP_Text? originalLabel = originalButton.GetComponentInChildren<TMP_Text>(true);
         TMP_Text? customLabel = customButton.GetComponentInChildren<TMP_Text>(true);
@@ -336,7 +340,7 @@ internal sealed class ChangelogModule
         }
         if (panel != null)
         {
-            RectTransform vanillaRect = startup.m_changeLog.GetComponent<RectTransform>();
+            RectTransform vanillaRect = GetChangeLog(startup).GetComponent<RectTransform>();
             RectTransform panelRect = panel.GetComponent<RectTransform>();
             // Anchored offsets remain stable when the canvas resizes; local X does not.
             // Let Valheim retain its live horizontal placement and change only anchored Y.
@@ -397,7 +401,7 @@ internal sealed class ChangelogModule
     {
         if (communityPanel != null) return;
         startup.m_moddedText?.SetActive(false);
-        startup.m_merchStoreButtonParent?.SetActive(false);
+        GetMerchStoreButtonParent(startup)?.SetActive(false);
 
         Transform parent = startup.m_moddedText != null ? startup.m_moddedText.transform.parent : startup.m_mainMenu.transform;
         string pluginDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? Paths.PluginPath;

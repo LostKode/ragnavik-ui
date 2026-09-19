@@ -82,11 +82,13 @@ internal sealed class DirectEntryModule
         startup.OnWorldStart();
     }
 
+    private static string GetWorldName(World world) => Traverse.Create(world).Field<string>("m_worldName").Value ?? string.Empty;
+
     private static World? FindLocalTestWorld()
     {
         foreach (World world in SaveSystem.GetWorldList())
         {
-            if (world.m_worldName.Equals(LocalTestWorldName, StringComparison.OrdinalIgnoreCase) ||
+            if (GetWorldName(world).Equals(LocalTestWorldName, StringComparison.OrdinalIgnoreCase) ||
                 world.m_name.Equals(LocalTestWorldName, StringComparison.OrdinalIgnoreCase))
                 return world;
         }
