@@ -31,6 +31,7 @@ internal sealed class LoadingScreenModule
     private Image? worldBackground;
     private TMP_Text? worldTipLabel;
     private GameObject? worldIndicator;
+    private GameObject? worldIndicatorLayer;
     private bool worldLoadingWasVisible;
     private bool worldProgressWasActive;
     private bool suppressWorldLoadingUntilHidden;
@@ -230,6 +231,13 @@ internal sealed class LoadingScreenModule
             return;
         }
 
+        Canvas? worldCanvas = hud.m_loadingScreen.GetComponentInParent<Canvas>();
+        if (worldCanvas == null)
+        {
+            log.LogWarning("Valheim world loading canvas was unavailable; leaving the vanilla screen unchanged.");
+            return;
+        }
+
         worldOverlay = new GameObject("RagnavikWorldLoading", typeof(RectTransform));
         RectTransform overlayRect = worldOverlay.GetComponent<RectTransform>();
         overlayRect.SetParent(hud.m_loadingScreen.transform, false);
@@ -258,11 +266,17 @@ internal sealed class LoadingScreenModule
         SetupTip(worldTipLabel);
         worldTipLabel.gameObject.SetActive(true);
 
+        worldIndicatorLayer = new GameObject("RagnavikWorldLoadingIndicatorLayer", typeof(RectTransform));
+        RectTransform indicatorLayerRect = worldIndicatorLayer.GetComponent<RectTransform>();
+        indicatorLayerRect.SetParent(worldCanvas.transform, false);
+        Stretch(indicatorLayerRect);
+        worldIndicatorLayer.SetActive(false);
+
         if (indicatorSprite != null)
         {
             worldIndicator = new GameObject("RagnavikWorldLoadingIndicator", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(FjordGateActivity));
             RectTransform markerRect = worldIndicator.GetComponent<RectTransform>();
-            markerRect.SetParent(overlayRect, false);
+            markerRect.SetParent(indicatorLayerRect, false);
             markerRect.anchorMin = markerRect.anchorMax = new Vector2(0.5f, 0.17f);
             markerRect.pivot = new Vector2(0.5f, 0f);
             markerRect.anchoredPosition = new Vector2(0f, 16f);
@@ -277,10 +291,12 @@ internal sealed class LoadingScreenModule
         restorations.Add(() =>
         {
             if (worldOverlay != null) UnityEngine.Object.Destroy(worldOverlay);
+            if (worldIndicatorLayer != null) UnityEngine.Object.Destroy(worldIndicatorLayer);
             worldOverlay = null;
             worldBackground = null;
             worldTipLabel = null;
             worldIndicator = null;
+            worldIndicatorLayer = null;
         });
         log.LogInfo("Prepared the Ragnavik full world-entry loading overlay.");
     }
@@ -295,18 +311,21 @@ internal sealed class LoadingScreenModule
         {
             suppressWorldLoadingUntilHidden = true;
             worldOverlay.SetActive(false);
+            if (worldIndicatorLayer != null) worldIndicatorLayer.SetActive(false);
             worldLoadingWasVisible = false;
             return;
         }
         if (suppressWorldLoadingUntilHidden)
         {
             worldOverlay.SetActive(false);
+            if (worldIndicatorLayer != null) worldIndicatorLayer.SetActive(false);
             if (!visible) suppressWorldLoadingUntilHidden = false;
             return;
         }
         if (!visible)
         {
             worldOverlay.SetActive(false);
+            if (worldIndicatorLayer != null) worldIndicatorLayer.SetActive(false);
             if (worldLoadingWasVisible) hud.m_loadingProgress.SetActive(worldProgressWasActive);
             worldLoadingWasVisible = false;
             return;
@@ -322,6 +341,11 @@ internal sealed class LoadingScreenModule
         hud.m_loadingProgress.SetActive(false);
         worldOverlay.SetActive(true);
         worldOverlay.transform.SetAsLastSibling();
+        if (worldIndicatorLayer != null)
+        {
+            worldIndicatorLayer.SetActive(true);
+            worldIndicatorLayer.transform.SetAsLastSibling();
+        }
         if (worldIndicator != null)
         {
             worldIndicator.SetActive(true);
