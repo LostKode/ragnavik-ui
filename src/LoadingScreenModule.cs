@@ -118,7 +118,7 @@ internal sealed class LoadingScreenModule
             sceneIndicator = new GameObject("RagnavikSceneLoadingIndicator", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(FjordGateActivity));
             RectTransform markerRect = sceneIndicator.GetComponent<RectTransform>();
             markerRect.SetParent(overlayRect, false);
-            markerRect.anchorMin = markerRect.anchorMax = new Vector2(0.5f, 0.22f);
+            markerRect.anchorMin = markerRect.anchorMax = new Vector2(0.5f, 0.17f);
             markerRect.pivot = new Vector2(0.5f, 0f);
             markerRect.anchoredPosition = new Vector2(0f, 16f);
             markerRect.sizeDelta = new Vector2(88f, 88f);
@@ -263,7 +263,7 @@ internal sealed class LoadingScreenModule
             worldIndicator = new GameObject("RagnavikWorldLoadingIndicator", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(FjordGateActivity));
             RectTransform markerRect = worldIndicator.GetComponent<RectTransform>();
             markerRect.SetParent(overlayRect, false);
-            markerRect.anchorMin = markerRect.anchorMax = new Vector2(0.5f, 0.22f);
+            markerRect.anchorMin = markerRect.anchorMax = new Vector2(0.5f, 0.17f);
             markerRect.pivot = new Vector2(0.5f, 0f);
             markerRect.anchoredPosition = new Vector2(0f, 16f);
             markerRect.sizeDelta = new Vector2(88f, 88f);
