@@ -21,6 +21,7 @@ internal sealed class RagnavikCharacterSelectionModule
 
     internal static PlayerProfile? SelectedProfile { get; private set; }
     internal static RagnavikCharacterEnvironment? SelectedEnvironment { get; private set; }
+    internal static RagnavikCharacterEnvironment? ActiveEnvironment { get; private set; }
 
     internal RagnavikCharacterSelectionModule(ManualLogSource log)
     {
@@ -41,6 +42,7 @@ internal sealed class RagnavikCharacterSelectionModule
     {
         current = this;
         harmony.PatchAll(typeof(Patches));
+        ActiveEnvironment = Ready ? environment : null;
         if (Ready) log.LogInfo($"Ragnavik character selector enabled for {environment}. Normal Valheim profiles remain outside this selector.");
         else log.LogError($"Ragnavik character selector is locked to protect normal Valheim profiles: {initializationError}");
     }
@@ -51,6 +53,7 @@ internal sealed class RagnavikCharacterSelectionModule
         selectorActive = false;
         SelectedProfile = null;
         SelectedEnvironment = null;
+        ActiveEnvironment = null;
         if (ReferenceEquals(current, this)) current = null;
     }
 
@@ -134,17 +137,25 @@ internal sealed class RagnavikCharacterSelectionModule
         log.LogInfo($"Removed a registered {environment!.Value} Ragnavik character after Valheim deleted its profile.");
     }
 
-    private void SelectForHandoff(FejdStartup startup)
+    private bool SelectForHandoff(FejdStartup startup)
     {
+        if (!selectorActive) return true;
         List<PlayerProfile> profiles = GetProfiles(startup);
         int profileIndex = GetProfileIndex(startup);
-        if (!selectorActive || profileIndex < 0 || profileIndex >= profiles.Count) return;
+        if (profileIndex < 0 || profileIndex >= profiles.Count)
+        {
+            SelectedProfile = null;
+            SelectedEnvironment = null;
+            log.LogWarning($"Blocked character start because no {environment} Ragnavik character is selected.");
+            return false;
+        }
         PlayerProfile profile = profiles[profileIndex];
         if (!Ready || !registry!.Owns(profile, environment!.Value)) throw new InvalidOperationException("Selected character is not owned by the active Ragnavik environment.");
         SelectedProfile = profile;
         SelectedEnvironment = environment.Value;
         selectorActive = false;
         log.LogInfo($"Selected a validated {environment.Value} Ragnavik character for handoff.");
+        return true;
     }
 
     private static List<PlayerProfile> GetProfiles(FejdStartup startup) => Traverse.Create(startup).Field("m_profiles").GetValue<List<PlayerProfile>>() ?? new List<PlayerProfile>();
@@ -191,7 +202,7 @@ internal sealed class RagnavikCharacterSelectionModule
         private static void CompleteRemoval(string __state) => current?.FinishRemoval(__state, __state.Length > 0);
 
         [HarmonyPatch(typeof(FejdStartup), nameof(FejdStartup.OnCharacterStart)), HarmonyPrefix]
-        private static void CaptureSelection(FejdStartup __instance) => current?.SelectForHandoff(__instance);
+        private static bool CaptureSelection(FejdStartup __instance) => current?.SelectForHandoff(__instance) ?? true;
 
         [HarmonyPatch(typeof(FejdStartup), "OnSelelectCharacterBack"), HarmonyPostfix]
         private static void LeaveSelector()
