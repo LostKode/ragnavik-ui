@@ -39,25 +39,19 @@ jobs:
           fi
 
           install_root="$RUNNER_TEMP/ragnavik-build-references"
-          mkdir -p "$install_root/valheim" "$install_root/bepinex"
-          docker run --rm \
-            --volume "$install_root/valheim:/data" \
-            steamcmd/steamcmd:ubuntu-22 \
-            +force_install_dir /data \
-            +login anonymous \
-            +app_update 896660 validate \
-            +quit
+          reference_version="1.2214.6"
+          reference_sha256="7b014ef8e605a251c6c3999f3c6a7e3ce1db59e7e0307733d4b80e3431893e86"
+          mkdir -p "$install_root"
           curl --fail --location --retry 3 \
-            https://thunderstore.io/package/download/denikson/BepInExPack_Valheim/5.4.2350/ \
-            --output "$install_root/bepinex.zip"
-          unzip -q "$install_root/bepinex.zip" -d "$install_root/bepinex"
-
-          managed_dir=$(find "$install_root/valheim" -type d -path '*/valheim_server_Data/Managed' -print -quit)
-          bepinex_dir=$(find "$install_root/bepinex" -type d -path '*/BepInEx/core' -print -quit)
-          test -n "$managed_dir"
-          test -n "$bepinex_dir"
-          echo "VALHEIM_MANAGED_DIR=$managed_dir" >> "$GITHUB_ENV"
-          echo "BEPINEX_CORE_DIR=$bepinex_dir" >> "$GITHUB_ENV"
+            "https://api.nuget.org/v3-flatcontainer/coffeenova.valheim.managedreferences/$reference_version/coffeenova.valheim.managedreferences.$reference_version.nupkg" \
+            --output "$install_root/references.nupkg"
+          echo "$reference_sha256  $install_root/references.nupkg" | sha256sum --check --strict
+          unzip -q "$install_root/references.nupkg" -d "$install_root/package"
+          reference_dir="$install_root/package/lib/net46"
+          test -f "$reference_dir/assembly_valheim.dll"
+          test -f "$reference_dir/BepInEx.dll"
+          echo "VALHEIM_MANAGED_DIR=$reference_dir" >> "$GITHUB_ENV"
+          echo "BEPINEX_CORE_DIR=$reference_dir" >> "$GITHUB_ENV"
       - run: ./scripts/validate.sh
       - run: ./scripts/package.sh
       - run: ./scripts/validate.sh
