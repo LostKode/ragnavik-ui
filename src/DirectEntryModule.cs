@@ -23,6 +23,8 @@ internal sealed class DirectEntryModule
         this.log = log;
         string pluginDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? Paths.PluginPath;
         target = DirectEntryTarget.Load(Path.Combine(pluginDirectory, "direct-entry.env"));
+        if (RagnavikCharacterSelectionModule.ActiveEnvironment != target.Environment)
+            throw new InvalidOperationException("Direct-entry and character environments do not match.");
     }
 
     internal void Start()

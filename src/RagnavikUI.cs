@@ -15,20 +15,23 @@ using UnityEngine.UI;
 
 namespace RagnavikUI;
 
-[BepInPlugin("lostkode.ragnavik.ui", "Ragnavik UI", "1.1.1")]
+[BepInPlugin("lostkode.ragnavik.ui", "Ragnavik UI", "1.2.3")]
 public sealed class RagnavikUIPlugin : BaseUnityPlugin
 {
     internal const string PluginGuid = "lostkode.ragnavik.ui";
     private ChangelogModule? changelog;
     private DirectEntryModule? directEntry;
+    private RagnavikCharacterSelectionModule? characterSelection;
     private void Awake()
     {
+        try { characterSelection = new RagnavikCharacterSelectionModule(Logger); characterSelection.Start(); }
+        catch (Exception error) { Logger.LogError($"Ragnavik character selector disabled: {error}"); characterSelection?.Stop(); }
         try { changelog = new ChangelogModule(this, Config, Logger); changelog.Start(); }
         catch (Exception error) { Logger.LogError($"Changelog module disabled: {error}"); changelog?.Stop(); }
         try { directEntry = new DirectEntryModule(Logger); directEntry.Start(); }
         catch (Exception error) { Logger.LogError($"Direct entry module disabled: {error.Message}"); directEntry?.Stop(); }
     }
-    private void OnDestroy() { directEntry?.Stop(); changelog?.Stop(); }
+    private void OnDestroy() { directEntry?.Stop(); changelog?.Stop(); characterSelection?.Stop(); }
 }
 
 internal sealed class ChangelogModule

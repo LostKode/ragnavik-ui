@@ -1,11 +1,11 @@
 {
   "name": "Ragnavik_UI",
-  "version_number": "1.1.1",
+  "version_number": "1.2.3",
   "website_url": "https://ragnavik.vercel.app",
   "description": "Ragnavik interface modules and presentation for the Ragnavik client pack.",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2350",
-    "Azumatt-AzuClock-1.1.9",
+    "Azumatt-AzuClock-1.1.1",
     "Neobotics-HUDCompass-1.2.0"
   ]
 }

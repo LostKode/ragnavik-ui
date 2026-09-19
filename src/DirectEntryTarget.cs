@@ -10,6 +10,7 @@ internal sealed class DirectEntryTarget
     internal const string AddressToken = "__RAGNAVIK_SERVER_ADDRESS__";
     internal const string PortToken = "__RAGNAVIK_SERVER_PORT__";
     internal bool IsTest { get; }
+    internal RagnavikCharacterEnvironment Environment => IsTest ? RagnavikCharacterEnvironment.Test : RagnavikCharacterEnvironment.Production;
     internal string Address { get; }
     internal ushort Port { get; }
     internal string DisplayName => IsTest ? "local test game" : "Ragnavik server";

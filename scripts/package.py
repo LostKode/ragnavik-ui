@@ -48,6 +48,7 @@ def main() -> int:
         (package_dir / "assets/discord.png", "plugins/RagnavikUI/discord.png"),
         (package_dir / "assets/buymeacoffee.png", "plugins/RagnavikUI/buymeacoffee.png"),
         (package_dir / "direct-entry.env", "plugins/RagnavikUI/direct-entry.env"),
+        (package_dir / "character-environment.env", "plugins/RagnavikUI/character-environment.env"),
         (package_dir / "config/Azumatt.AzuClock.cfg", "config/Azumatt.AzuClock.cfg"),
         (dll_path, "plugins/RagnavikUI/RagnavikUI.dll"),
     ]
