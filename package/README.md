@@ -12,16 +12,17 @@ If the active environment has no registered character, Ragnavik leaves the selec
 
 Install this package through Ragnavik 1.1.12 or newer. Its plugin is client only. Ragnavik Server 1.0.6 or newer allows the plugin ID `lostkode.ragnavik.ui` in the anti-cheat profile; the dedicated server does not need this UI plugin.
 
-Loading images and tips are packaged with Ragnavik UI and require no player configuration. Each loading event chooses a different image and tip when more than one is available. Images keep their original aspect ratio. The textless Fjord Gate mark provides a subtle activity pulse during startup. Missing or incompatible loading assets leave Valheim's native presentation available.
+Loading images and tips are packaged with Ragnavik UI and require no player configuration. Each loading event chooses a different image and tip when more than one is available. Images cover the complete screen while preserving their original aspect ratio, cropping overflow when needed. The textless Fjord Gate mark provides a subtle activity pulse during startup. Missing or incompatible loading assets leave Valheim's native presentation available.
 
 Ragnavik UI does not replace teleport loading screens. TargetPortal and Valheim retain ownership of that flow.
 
 ## Changelog
 
-### 1.2.1
+### 1.2.2
 
 * Add randomized loading art and tips for startup and initial world or server entry.
 * Replace the supported startup loading spinner with the animated textless Fjord Gate mark.
+* Fill the complete screen and keep the activity mark visible above the tooltip during startup and world entry.
 * Preserve vanilla fallbacks and leave teleport loading screens unchanged.
 * Package all eight loading images and all 44 tips with Ragnavik UI.
 

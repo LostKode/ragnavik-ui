@@ -24,11 +24,13 @@ internal sealed class LoadingScreenModule
     private GameObject? sceneOverlay;
     private Image? sceneBackground;
     private TMP_Text? sceneTip;
+    private GameObject? sceneIndicator;
     private float sceneContentChangedAt;
     private Sprite? worldImage;
     private GameObject? worldOverlay;
     private Image? worldBackground;
     private TMP_Text? worldTipLabel;
+    private GameObject? worldIndicator;
     private bool worldLoadingWasVisible;
     private bool worldProgressWasActive;
     private bool suppressWorldLoadingUntilHidden;
@@ -113,17 +115,18 @@ internal sealed class LoadingScreenModule
 
         if (indicatorSprite != null)
         {
-            GameObject marker = new("RagnavikSceneLoadingIndicator", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(FjordGateActivity));
-            RectTransform markerRect = marker.GetComponent<RectTransform>();
+            sceneIndicator = new GameObject("RagnavikSceneLoadingIndicator", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(FjordGateActivity));
+            RectTransform markerRect = sceneIndicator.GetComponent<RectTransform>();
             markerRect.SetParent(overlayRect, false);
-            markerRect.anchorMin = markerRect.anchorMax = new Vector2(0.5f, 0f);
+            markerRect.anchorMin = markerRect.anchorMax = new Vector2(0.5f, 0.22f);
             markerRect.pivot = new Vector2(0.5f, 0f);
-            markerRect.anchoredPosition = new Vector2(0f, 36f);
+            markerRect.anchoredPosition = new Vector2(0f, 16f);
             markerRect.sizeDelta = new Vector2(88f, 88f);
-            Image markerImage = marker.GetComponent<Image>();
+            Image markerImage = sceneIndicator.GetComponent<Image>();
             markerImage.sprite = indicatorSprite;
             markerImage.preserveAspect = true;
             markerImage.raycastTarget = false;
+            sceneIndicator.transform.SetAsLastSibling();
         }
 
         sceneContentChangedAt = Time.unscaledTime;
@@ -133,6 +136,7 @@ internal sealed class LoadingScreenModule
             sceneOverlay = null;
             sceneBackground = null;
             sceneTip = null;
+            sceneIndicator = null;
         });
         log.LogInfo("Prepared the Ragnavik initial startup loading screen.");
     }
@@ -141,6 +145,11 @@ internal sealed class LoadingScreenModule
     {
         if (sceneOverlay == null || sceneBackground == null || sceneImage == null) return;
         sceneOverlay.transform.SetAsLastSibling();
+        if (sceneIndicator != null)
+        {
+            sceneIndicator.SetActive(true);
+            sceneIndicator.transform.SetAsLastSibling();
+        }
         if (Time.unscaledTime - sceneContentChangedAt >= 10f)
         {
             if (content.TryNextImage(out Sprite? nextImage) && nextImage != null) sceneImage = nextImage;
@@ -251,17 +260,18 @@ internal sealed class LoadingScreenModule
 
         if (indicatorSprite != null)
         {
-            GameObject marker = new("RagnavikWorldLoadingIndicator", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(FjordGateActivity));
-            RectTransform markerRect = marker.GetComponent<RectTransform>();
+            worldIndicator = new GameObject("RagnavikWorldLoadingIndicator", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(FjordGateActivity));
+            RectTransform markerRect = worldIndicator.GetComponent<RectTransform>();
             markerRect.SetParent(overlayRect, false);
-            markerRect.anchorMin = markerRect.anchorMax = new Vector2(0.5f, 0f);
+            markerRect.anchorMin = markerRect.anchorMax = new Vector2(0.5f, 0.22f);
             markerRect.pivot = new Vector2(0.5f, 0f);
-            markerRect.anchoredPosition = new Vector2(0f, 36f);
+            markerRect.anchoredPosition = new Vector2(0f, 16f);
             markerRect.sizeDelta = new Vector2(88f, 88f);
-            Image markerImage = marker.GetComponent<Image>();
+            Image markerImage = worldIndicator.GetComponent<Image>();
             markerImage.sprite = indicatorSprite;
             markerImage.preserveAspect = true;
             markerImage.raycastTarget = false;
+            worldIndicator.transform.SetAsLastSibling();
         }
 
         restorations.Add(() =>
@@ -270,6 +280,7 @@ internal sealed class LoadingScreenModule
             worldOverlay = null;
             worldBackground = null;
             worldTipLabel = null;
+            worldIndicator = null;
         });
         log.LogInfo("Prepared the Ragnavik full world-entry loading overlay.");
     }
@@ -311,6 +322,11 @@ internal sealed class LoadingScreenModule
         hud.m_loadingProgress.SetActive(false);
         worldOverlay.SetActive(true);
         worldOverlay.transform.SetAsLastSibling();
+        if (worldIndicator != null)
+        {
+            worldIndicator.SetActive(true);
+            worldIndicator.transform.SetAsLastSibling();
+        }
         if (worldImage != null) ApplyImage(worldBackground, worldImage);
     }
 
@@ -328,8 +344,11 @@ internal sealed class LoadingScreenModule
     private static void ApplyImage(Image target, Sprite image)
     {
         target.sprite = image;
-        target.preserveAspect = true;
+        target.preserveAspect = false;
         target.color = Color.white;
+        AspectRatioFitter fitter = target.GetComponent<AspectRatioFitter>() ?? target.gameObject.AddComponent<AspectRatioFitter>();
+        fitter.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent;
+        fitter.aspectRatio = image.rect.width / image.rect.height;
     }
 
     private void SetupIndicator(Transform root)
