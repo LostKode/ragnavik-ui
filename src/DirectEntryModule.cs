@@ -75,6 +75,7 @@ internal sealed class DirectEntryModule
         startup.m_openServerToggle.SetIsOnWithoutNotify(false);
         startup.m_publicServerToggle.SetIsOnWithoutNotify(false);
         startup.m_crossplayServerToggle.SetIsOnWithoutNotify(false);
+        startup.m_startGamePanel.SetActive(false);
         log.LogInfo($"Starting local Test Mode world {LocalTestWorldName}.");
         startup.OnWorldStart();
     }
