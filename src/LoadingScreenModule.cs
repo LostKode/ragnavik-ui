@@ -385,18 +385,6 @@ internal sealed class LoadingScreenModule
             Image? vanillaImage = indicator.GetComponent<Image>() ?? indicator.GetComponentInChildren<Image>(true);
             if (vanillaImage == null) continue;
 
-            GameObject marker = new("RagnavikLoadingIndicator", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(FjordGateActivity));
-            RectTransform rect = marker.GetComponent<RectTransform>();
-            rect.SetParent(vanillaImage.rectTransform.parent, false);
-            rect.anchorMin = vanillaImage.rectTransform.anchorMin;
-            rect.anchorMax = vanillaImage.rectTransform.anchorMax;
-            rect.pivot = vanillaImage.rectTransform.pivot;
-            rect.anchoredPosition = vanillaImage.rectTransform.anchoredPosition;
-            rect.sizeDelta = vanillaImage.rectTransform.sizeDelta;
-            Image markerImage = marker.GetComponent<Image>();
-            markerImage.sprite = indicatorSprite;
-            markerImage.preserveAspect = true;
-            markerImage.raycastTarget = false;
             bool vanillaEnabled = vanillaImage.enabled;
             vanillaImage.enabled = false;
             replacedIndicators.Add(id);
@@ -404,9 +392,25 @@ internal sealed class LoadingScreenModule
             {
                 replacedIndicators.Remove(id);
                 if (vanillaImage != null) vanillaImage.enabled = vanillaEnabled;
-                if (marker != null) UnityEngine.Object.Destroy(marker);
             });
         }
+
+        GameObject marker = new("RagnavikMenuLoadingIndicator", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(FjordGateActivity));
+        RectTransform rect = marker.GetComponent<RectTransform>();
+        rect.SetParent(root, false);
+        rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.17f);
+        rect.pivot = new Vector2(0.5f, 0f);
+        rect.anchoredPosition = new Vector2(0f, 16f);
+        rect.sizeDelta = new Vector2(88f, 88f);
+        Image markerImage = marker.GetComponent<Image>();
+        markerImage.sprite = indicatorSprite;
+        markerImage.preserveAspect = true;
+        markerImage.raycastTarget = false;
+        marker.transform.SetAsLastSibling();
+        restorations.Add(() =>
+        {
+            if (marker != null) UnityEngine.Object.Destroy(marker);
+        });
     }
 
     private Sprite? LoadSprite(string path, string name)
@@ -485,5 +489,6 @@ internal sealed class FjordGateActivity : MonoBehaviour
         float pulse = 0.92f + Mathf.Sin(Time.unscaledTime * 2.2f) * 0.08f;
         if (rect != null) rect.localScale = Vector3.one * pulse;
         if (canvasGroup != null) canvasGroup.alpha = 0.78f + Mathf.Sin(Time.unscaledTime * 2.2f) * 0.14f;
+        transform.SetAsLastSibling();
     }
 }

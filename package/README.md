@@ -18,13 +18,14 @@ Ragnavik UI does not replace teleport loading screens. TargetPortal and Valheim 
 
 ## Changelog
 
-### 1.2.4
+### 1.2.5
 
 * Add randomized loading art and tips for startup and initial world or server entry.
 * Replace the supported startup loading spinner with the animated textless Fjord Gate mark.
 * Fill the complete screen and keep the activity mark visible above the tooltip during startup and world entry.
 * Lower the activity mark by five percent of screen height.
 * Keep the world-entry activity mark on a dedicated top layer matching startup.
+* Always show the same activity mark during the menu-to-world transition.
 * Preserve vanilla fallbacks and leave teleport loading screens unchanged.
 * Package all eight loading images and all 44 tips with Ragnavik UI.
 
