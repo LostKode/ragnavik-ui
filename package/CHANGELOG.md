@@ -2,6 +2,7 @@
 
 | Version | Changes |
 | --- | --- |
+| 1.2.9 | Show specific connection guidance for Valheim version mismatches, mod and CatosAntiCheat rejections, server availability and timeouts, access rejections, and unknown failures. Keep retry instructions aligned with the Start Game button. |
 | 1.2.8 | Rewrite the package details for players, highlight the main menu, character selection, and loading screen experience, and keep release history in this changelog instead of the store details. |
 | 1.2.7 | Restore isolated character selection after merged UI releases, recover interrupted Ragnavik character registrations, keep unrelated Valheim characters out of the selector, and preserve player names instead of private storage identifiers. |
 | 1.2.6 | Keep the Fjord Gate logo applied when returning to the main menu after entering or leaving gameplay. |
