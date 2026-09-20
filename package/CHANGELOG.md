@@ -2,6 +2,7 @@
 
 | Version | Changes |
 | --- | --- |
+| 1.2.7 | Restore isolated character selection after merged UI releases, recover interrupted Ragnavik character registrations, keep unrelated Valheim characters out of the selector, and preserve player names instead of private storage identifiers. |
 | 1.2.6 | Keep the Fjord Gate logo applied when returning to the main menu after entering or leaving gameplay. |
 | 1.2.5 | Preserve the changelog panel, community links, and local Test world selection while resolving Valheim private fields dynamically. |
 | 1.2.4 | Add branded full-screen loading art and randomized tips across startup, menu-to-world transition, and initial world entry. Replace visible vanilla loaders with the animated Fjord Gate activity mark at the approved position, keep it above tips throughout each phase, and leave teleport loading screens under their existing owner. Package eight loading images and 44 tips. |
