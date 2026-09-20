@@ -18,6 +18,7 @@ internal sealed class RagnavikCharacterSelectionModule
     private readonly RagnavikCharacterEnvironment? environment;
     private readonly string? initializationError;
     private bool selectorActive;
+    private bool recoveryAttempted;
 
     internal static PlayerProfile? SelectedProfile { get; private set; }
     internal static RagnavikCharacterEnvironment? SelectedEnvironment { get; private set; }
@@ -60,10 +61,26 @@ internal sealed class RagnavikCharacterSelectionModule
     private void Show(FejdStartup startup)
     {
         selectorActive = true;
+        RecoverInterruptedCreations();
         SelectedProfile = null;
         SelectedEnvironment = null;
         ApplyFilter(startup, null);
         Traverse.Create(startup).Method("UpdateCharacterList").GetValue();
+    }
+
+    private void RecoverInterruptedCreations()
+    {
+        if (recoveryAttempted || !Ready) return;
+        recoveryAttempted = true;
+        try
+        {
+            int recovered = registry!.RecoverGeneratedProfiles(SaveSystem.GetAllPlayerProfiles(), environment!.Value);
+            if (recovered > 0) log.LogWarning($"Recovered {recovered} interrupted {environment.Value} Ragnavik character registration(s).");
+        }
+        catch (Exception error)
+        {
+            log.LogError($"Could not recover interrupted Ragnavik character registrations: {error}");
+        }
     }
 
     private void ApplyFilter(FejdStartup startup, string? selectFilename)
@@ -100,27 +117,57 @@ internal sealed class RagnavikCharacterSelectionModule
         return true;
     }
 
-    private void FinishCreation(FejdStartup startup, CreationState? state, Exception? originalError)
+    private Exception? FinishCreation(FejdStartup startup, CreationState? state, Exception? originalError)
     {
-        if (state == null || !state.active) return;
+        if (state == null || !state.active) return originalError;
         startup.m_csNewCharacterName.text = state.displayName;
-        if (state.skipped || originalError != null) return;
+        if (state.skipped || originalError != null) return originalError;
         PlayerProfile? profile = SaveSystem.GetAllPlayerProfiles().FirstOrDefault(candidate => candidate.GetFilename() == state.filename);
-        if (profile == null) return;
+        if (profile == null) return new InvalidOperationException("Valheim did not create the new Ragnavik character profile.");
         try
         {
             profile.SetName(state.displayName);
-            if (!profile.Save()) throw new InvalidOperationException("Valheim did not save the new Ragnavik character.");
+            if (!SaveProfile(profile)) throw new InvalidOperationException("Valheim did not save the new Ragnavik character.");
             registry!.Add(profile, environment!.Value);
         }
-        catch
+        catch (Exception error)
         {
-            PlayerProfile.RemoveProfile(state.filename);
-            throw;
+            TryRemoveCreatedProfile(state.filename);
+            log.LogError($"Could not finish Ragnavik character creation: {error}");
+            return error;
         }
         ApplyFilter(startup, state.filename);
         Traverse.Create(startup).Method("UpdateCharacterList").GetValue();
         log.LogInfo($"Created a new {environment!.Value} Ragnavik character in Valheim's normal protected save system.");
+        return null;
+    }
+
+    private static bool SaveProfile(PlayerProfile profile)
+    {
+        MethodInfo? save = AccessTools.GetDeclaredMethods(typeof(PlayerProfile))
+            .FirstOrDefault(method => method.Name == "Save" && !method.IsStatic && method.GetParameters().Length == 0 && method.ReturnType == typeof(bool));
+        if (save == null) throw new MissingMethodException("Valheim's compatible character save method was not found.");
+        return save.Invoke(profile, null) is bool saved && saved;
+    }
+
+    private void TryRemoveCreatedProfile(string filename)
+    {
+        try
+        {
+            MethodInfo? remove = AccessTools.GetDeclaredMethods(typeof(PlayerProfile))
+                .FirstOrDefault(method => method.Name == "RemoveProfile" && method.IsStatic &&
+                    method.GetParameters() is ParameterInfo[] parameters && parameters.Length == 1 && parameters[0].ParameterType == typeof(string));
+            if (remove == null)
+            {
+                log.LogError("Could not remove the incomplete Ragnavik character because Valheim's compatible removal method was not found.");
+                return;
+            }
+            remove.Invoke(null, new object[] { filename });
+        }
+        catch (Exception cleanupError)
+        {
+            log.LogError($"Could not remove the incomplete Ragnavik character {filename}: {cleanupError}");
+        }
     }
 
     private List<PlayerProfile> GetOwnedProfiles() => Ready ? SaveSystem.GetAllPlayerProfiles().Where(profile => registry!.Owns(profile, environment!.Value)).ToList() : new List<PlayerProfile>();
@@ -197,10 +244,7 @@ internal sealed class RagnavikCharacterSelectionModule
 
         [HarmonyPatch(typeof(FejdStartup), nameof(FejdStartup.OnNewCharacterDone)), HarmonyFinalizer]
         private static Exception? CompleteNewCharacter(FejdStartup __instance, CreationState? __state, Exception? __exception)
-        {
-            current?.FinishCreation(__instance, __state, __exception);
-            return __exception;
-        }
+            => current?.FinishCreation(__instance, __state, __exception) ?? __exception;
 
         [HarmonyPatch(typeof(FejdStartup), "OnButtonRemoveCharacterYes"), HarmonyPrefix]
         private static void CaptureRemoval(FejdStartup __instance, out string __state)

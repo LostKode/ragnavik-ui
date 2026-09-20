@@ -31,6 +31,29 @@ internal sealed class RagnavikCharacterRegistry
     internal bool OwnsFilename(string filename, RagnavikCharacterEnvironment environment) =>
         HasExpectedPrefix(filename, environment) && entries.Any(entry => entry.environment == environment.ToString() && entry.filename == filename);
 
+    internal int RecoverGeneratedProfiles(IEnumerable<PlayerProfile> profiles, RagnavikCharacterEnvironment environment)
+    {
+        List<Entry> recovered = new();
+        foreach (PlayerProfile profile in profiles)
+        {
+            string filename = profile.GetFilename();
+            if (!HasGeneratedFilename(filename, environment) || profile.GetName() == filename || entries.Any(entry => entry.filename == filename)) continue;
+            recovered.Add(new Entry { filename = filename, environment = environment.ToString(), playerId = profile.GetPlayerID() });
+        }
+        if (recovered.Count == 0) return 0;
+        entries.AddRange(recovered);
+        try
+        {
+            Save();
+            return recovered.Count;
+        }
+        catch
+        {
+            foreach (Entry entry in recovered) entries.Remove(entry);
+            throw;
+        }
+    }
+
     internal void Add(PlayerProfile profile, RagnavikCharacterEnvironment environment)
     {
         string filename = profile.GetFilename();
@@ -60,6 +83,13 @@ internal sealed class RagnavikCharacterRegistry
 
     private static bool HasExpectedPrefix(string filename, RagnavikCharacterEnvironment environment) =>
         filename.StartsWith($"ragnavik_{RagnavikCharacterEnvironmentSource.Namespace(environment)}_", StringComparison.Ordinal);
+
+    private static bool HasGeneratedFilename(string filename, RagnavikCharacterEnvironment environment)
+    {
+        string prefix = $"ragnavik_{RagnavikCharacterEnvironmentSource.Namespace(environment)}_";
+        return filename.StartsWith(prefix, StringComparison.Ordinal) &&
+            Guid.TryParseExact(filename[prefix.Length..], "N", out _);
+    }
 
     private static List<Entry> Load(string path)
     {
