@@ -13,6 +13,7 @@
     <Reference Include="assembly_utils" HintPath="$(ValheimManagedDir)/assembly_utils.dll" />
     <Reference Include="UnityEngine" HintPath="$(ValheimManagedDir)/UnityEngine.dll" />
     <Reference Include="UnityEngine.CoreModule" HintPath="$(ValheimManagedDir)/UnityEngine.CoreModule.dll" />
+    <Reference Include="UnityEngine.TextRenderingModule" HintPath="$(ValheimManagedDir)/UnityEngine.TextRenderingModule.dll" />
     <Reference Include="UnityEngine.UIModule" HintPath="$(ValheimManagedDir)/UnityEngine.UIModule.dll" />
     <Reference Include="UnityEngine.UI" HintPath="$(ValheimManagedDir)/UnityEngine.UI.dll" />
     <Reference Include="gui_framework" HintPath="$(ValheimManagedDir)/gui_framework.dll" />
