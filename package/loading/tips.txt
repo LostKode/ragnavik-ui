@@ -39,6 +39,6 @@ Tip: SeidrChest adds magical storage options. Treat special chests as infrastruc
 Tip: MagicBows and Javelins add new ranged weapon paths. Each has different timing and resource needs, so carry ammunition and a backup weapon.
 Tip: MagicRevamp adds spellbooks, staves, wands, armor, and a broad spell progression. Revisit its crafting station as you discover new materials.
 Tip: WackyEpicMMOSystem adds character progression and build choices, while EpicLoot adds magical equipment and enchanting. Plan them together.
-Tip: RunicCharacterVault stores server characters centrally. Use the character associated with this server and let synchronization finish before disconnecting.
 Tip: SleepSkip allows the configured share of resting players to advance the night, so every connected player may not need a bed.
 Tip: If interface bars extend beyond the screen, reduce Valheim's UI scale in the game settings or your mod manager configuration.
+Tip: You can turn off the startup cinematic under Settings, Game, then Skip intro cinematic.
