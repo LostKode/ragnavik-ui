@@ -1,8 +1,8 @@
 {
   "name": "Ragnavik_UI",
-  "version_number": "1.2.7",
+  "version_number": "1.2.8",
   "website_url": "https://ragnavik.vercel.app",
-  "description": "Ragnavik interface modules and presentation for the Ragnavik client pack.",
+  "description": "A branded Ragnavik experience with custom menus, loading screens, updates, and character selection.",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2350",
     "Azumatt-AzuClock-1.1.1",
