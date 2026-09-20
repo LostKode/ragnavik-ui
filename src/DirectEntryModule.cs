@@ -159,7 +159,7 @@ internal sealed class DirectEntryModule
         startup.m_characterSelectScreen.SetActive(false);
         startup.m_mainMenu.SetActive(true);
         string failureMessage = ConnectionFailureMessages.Format((int)status, catosRejection);
-        startup.m_connectionFailedError.text = $"Could not connect to {target.DisplayName}.\n\n{failureMessage}\n\nReturn to the main menu and choose {target.PlayLabel} to retry.";
+        startup.m_connectionFailedError.text = $"Could not connect to {target.DisplayName}.\n\n{failureMessage}\n\nPlease retry by clicking {target.PlayLabel}.";
         log.LogWarning($"Direct entry to {target.DisplayName} failed with {status}. Target details were not logged.");
     }
 
