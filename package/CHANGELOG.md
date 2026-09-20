@@ -2,6 +2,7 @@
 
 | Version | Changes |
 | --- | --- |
+| 1.2.11 | Replace the outdated RunicCharacterVault loading tip with guidance for turning off the startup cinematic from Valheim's Game settings. |
 | 1.2.10 | Keep connection guidance and its action button in separate groups so the button remains below the message instead of covering its text. |
 | 1.2.9 | Show specific connection guidance for Valheim version mismatches, mod and CatosAntiCheat rejections, server availability and timeouts, access rejections, and unknown failures. Keep retry instructions aligned with the Start Game button. |
 | 1.2.8 | Rewrite the package details for players, highlight the main menu, character selection, and loading screen experience, and keep release history in this changelog instead of the store details. |
