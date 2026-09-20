@@ -13,11 +13,14 @@ namespace RagnavikUI;
 internal sealed class DirectEntryModule
 {
     private const string LocalTestWorldName = "galetest1";
+    private const string ConnectionLayoutName = "RagnavikConnectionLayout";
     private static DirectEntryModule? current;
     private readonly Harmony harmony = new(RagnavikUIPlugin.PluginGuid + ".direct-entry");
     private readonly ManualLogSource log;
     private readonly DirectEntryTarget target;
     private string? catosRejection;
+    private FejdStartup? startup;
+    private ZNet.ConnectionStatus lastFailureStatus;
 
     internal DirectEntryModule(ManualLogSource log)
     {
@@ -99,6 +102,7 @@ internal sealed class DirectEntryModule
 
     private void UpdateMenu(FejdStartup startup)
     {
+        this.startup = startup;
         foreach (Button button in startup.m_menuList.GetComponentsInChildren<Button>(true))
         {
             if (!Invokes(button, "OnStartGame")) continue;
@@ -148,19 +152,97 @@ internal sealed class DirectEntryModule
         if (!message.TrimStart().StartsWith(ConnectionFailureMessages.CatosRejectionPrefix, StringComparison.OrdinalIgnoreCase)) return;
         catosRejection = message.Trim();
         log.LogWarning("The server reported a CatosAntiCheat or mod-list rejection during direct entry.");
+        if (startup != null && startup.m_connectionFailedPanel.activeSelf)
+            RenderFailure(startup, lastFailureStatus);
     }
 
     private void RecoverFromFailure(FejdStartup startup, ZNet.ConnectionStatus status)
     {
         if (target.IsTest) return;
         if (!startup.m_connectionFailedPanel.activeSelf) return;
+        lastFailureStatus = status;
         startup.m_serverListPanel.SetActive(false);
         startup.m_startGamePanel.SetActive(false);
         startup.m_characterSelectScreen.SetActive(false);
         startup.m_mainMenu.SetActive(true);
+        RenderFailure(startup, status);
+        log.LogWarning($"Direct entry to {target.DisplayName} failed with {status}. Target details were not logged.");
+    }
+
+    private void RenderFailure(FejdStartup startup, ZNet.ConnectionStatus status)
+    {
         string failureMessage = ConnectionFailureMessages.Format((int)status, catosRejection);
         startup.m_connectionFailedError.text = $"Could not connect to {target.DisplayName}.\n\n{failureMessage}\n\nPlease retry by clicking {target.PlayLabel}.";
-        log.LogWarning($"Direct entry to {target.DisplayName} failed with {status}. Target details were not logged.");
+        EnsureConnectionFailureLayout(startup);
+    }
+
+    private static void EnsureConnectionFailureLayout(FejdStartup startup)
+    {
+        Transform panel = startup.m_connectionFailedPanel.transform;
+        RectTransform? existingLayout = panel.Find(ConnectionLayoutName) as RectTransform;
+        if (existingLayout != null)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(existingLayout);
+            return;
+        }
+
+        Button[] buttons = startup.m_connectionFailedPanel.GetComponentsInChildren<Button>(true);
+
+        GameObject layoutObject = new(ConnectionLayoutName, typeof(RectTransform), typeof(VerticalLayoutGroup));
+        RectTransform layoutRect = (RectTransform)layoutObject.transform;
+        layoutRect.SetParent(panel, false);
+        layoutRect.anchorMin = new Vector2(0.08f, 0.08f);
+        layoutRect.anchorMax = new Vector2(0.92f, 0.92f);
+        layoutRect.offsetMin = Vector2.zero;
+        layoutRect.offsetMax = Vector2.zero;
+        layoutRect.SetAsLastSibling();
+
+        VerticalLayoutGroup vertical = layoutObject.GetComponent<VerticalLayoutGroup>();
+        vertical.padding = new RectOffset(18, 18, 18, 18);
+        vertical.spacing = 18f;
+        vertical.childAlignment = TextAnchor.UpperCenter;
+        vertical.childControlWidth = true;
+        vertical.childControlHeight = true;
+        vertical.childForceExpandWidth = true;
+        vertical.childForceExpandHeight = false;
+
+        GameObject textGroupObject = new("Text", typeof(RectTransform), typeof(LayoutElement));
+        RectTransform textGroup = (RectTransform)textGroupObject.transform;
+        textGroup.SetParent(layoutRect, false);
+        LayoutElement textLayout = textGroupObject.GetComponent<LayoutElement>();
+        textLayout.minHeight = 120f;
+        textLayout.flexibleHeight = 1f;
+
+        RectTransform textRect = startup.m_connectionFailedError.rectTransform;
+        textRect.SetParent(textGroup, false);
+        textRect.anchorMin = Vector2.zero;
+        textRect.anchorMax = Vector2.one;
+        textRect.offsetMin = Vector2.zero;
+        textRect.offsetMax = Vector2.zero;
+        startup.m_connectionFailedError.enableWordWrapping = true;
+        startup.m_connectionFailedError.overflowMode = TextOverflowModes.Ellipsis;
+        startup.m_connectionFailedError.alignment = TextAlignmentOptions.Top;
+
+        GameObject buttonGroupObject = new("Actions", typeof(RectTransform), typeof(LayoutElement), typeof(HorizontalLayoutGroup));
+        RectTransform buttonGroup = (RectTransform)buttonGroupObject.transform;
+        buttonGroup.SetParent(layoutRect, false);
+        LayoutElement buttonLayout = buttonGroupObject.GetComponent<LayoutElement>();
+        buttonLayout.minHeight = 44f;
+        buttonLayout.preferredHeight = 52f;
+        buttonLayout.flexibleHeight = 0f;
+
+        HorizontalLayoutGroup horizontal = buttonGroupObject.GetComponent<HorizontalLayoutGroup>();
+        horizontal.spacing = 12f;
+        horizontal.childAlignment = TextAnchor.MiddleCenter;
+        horizontal.childControlWidth = false;
+        horizontal.childControlHeight = false;
+        horizontal.childForceExpandWidth = false;
+        horizontal.childForceExpandHeight = false;
+
+        foreach (Button button in buttons)
+            button.transform.SetParent(buttonGroup, false);
+
+        LayoutRebuilder.ForceRebuildLayoutImmediate(layoutRect);
     }
 
     private static class Patches
