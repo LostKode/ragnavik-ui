@@ -14,7 +14,7 @@ internal sealed class DirectEntryTarget
     internal string Address { get; }
     internal ushort Port { get; }
     internal string DisplayName => IsTest ? "local test game" : "Ragnavik server";
-    internal string PlayLabel => IsTest ? "Play Ragnavik Test" : "Play Ragnavik";
+    internal string PlayLabel => IsTest ? "Play Ragnavik Test" : "Start Game";
     private DirectEntryTarget(bool isTest, string address, ushort port) { IsTest = isTest; Address = address; Port = port; }
 
     internal static DirectEntryTarget Load(string path)
