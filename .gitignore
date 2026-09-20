@@ -1,5 +1,7 @@
 artifacts/
 src/bin/
 src/obj/
+tests/bin/
+tests/obj/
 *.user
 *.zip
