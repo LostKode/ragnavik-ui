@@ -17,6 +17,7 @@ internal sealed class DirectEntryModule
     private readonly Harmony harmony = new(RagnavikUIPlugin.PluginGuid + ".direct-entry");
     private readonly ManualLogSource log;
     private readonly DirectEntryTarget target;
+    private string? catosRejection;
 
     internal DirectEntryModule(ManualLogSource log)
     {
@@ -42,6 +43,7 @@ internal sealed class DirectEntryModule
 
     private void Prepare(FejdStartup startup)
     {
+        catosRejection = null;
         if (target.IsTest)
         {
             Traverse.Create(startup).Field("m_queuedJoinServer").SetValue(null);
@@ -140,7 +142,15 @@ internal sealed class DirectEntryModule
         label.gameObject.SetActive(true);
     }
 
-    private void RecoverFromFailure(FejdStartup startup)
+    private void CaptureCatosRejection(string message)
+    {
+        if (target.IsTest || string.IsNullOrWhiteSpace(message)) return;
+        if (!message.TrimStart().StartsWith(ConnectionFailureMessages.CatosRejectionPrefix, StringComparison.OrdinalIgnoreCase)) return;
+        catosRejection = message.Trim();
+        log.LogWarning("The server reported a CatosAntiCheat or mod-list rejection during direct entry.");
+    }
+
+    private void RecoverFromFailure(FejdStartup startup, ZNet.ConnectionStatus status)
     {
         if (target.IsTest) return;
         if (!startup.m_connectionFailedPanel.activeSelf) return;
@@ -148,9 +158,9 @@ internal sealed class DirectEntryModule
         startup.m_startGamePanel.SetActive(false);
         startup.m_characterSelectScreen.SetActive(false);
         startup.m_mainMenu.SetActive(true);
-        string nativeMessage = startup.m_connectionFailedError.text;
-        startup.m_connectionFailedError.text = $"Could not connect to {target.DisplayName}.\n\n{nativeMessage}\n\nReturn to the main menu and choose {target.PlayLabel} to retry.";
-        log.LogWarning($"Direct entry to {target.DisplayName} failed. Target details were not logged.");
+        string failureMessage = ConnectionFailureMessages.Format((int)status, catosRejection);
+        startup.m_connectionFailedError.text = $"Could not connect to {target.DisplayName}.\n\n{failureMessage}\n\nPlease retry by clicking {target.PlayLabel}.";
+        log.LogWarning($"Direct entry to {target.DisplayName} failed with {status}. Target details were not logged.");
     }
 
     private static class Patches
@@ -164,6 +174,9 @@ internal sealed class DirectEntryModule
         private static void StartTestWorld(FejdStartup __instance) => current?.StartLocalTestWorld(__instance);
 
         [HarmonyPatch(typeof(FejdStartup), "ShowConnectError"), HarmonyPostfix]
-        private static void RecoverConnectionFailure(FejdStartup __instance) => current?.RecoverFromFailure(__instance);
+        private static void RecoverConnectionFailure(FejdStartup __instance, ZNet.ConnectionStatus statusOverride) => current?.RecoverFromFailure(__instance, statusOverride);
+
+        [HarmonyPatch(typeof(Chat), "RPC_ChatMessage"), HarmonyPrefix]
+        private static void CaptureServerRejection(string text) => current?.CaptureCatosRejection(text);
     }
 }
