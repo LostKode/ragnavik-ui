@@ -1,44 +1,71 @@
-Tip: PlantEverything expands what can be cultivated, while PlantEasily helps you place crops in clean rows with sensible spacing.
-Tip: AzuCraftyBoxes lets nearby crafting stations use materials stored in containers, so organized workshops need less inventory shuffling.
-Tip: AzuExtendedPlayerInventory adds dedicated equipment and utility space. Move equipped items through their intended slots to avoid losing track of them.
-Tip: Warfare adds new weapons and combat progression. Check your forge and crafting upgrades as new materials become available.
-Tip: BetterArchery changes bow handling and projectile behavior. Take a few practice shots before trusting old aim habits.
-Tip: Backpacks provide portable storage and upgrade paths. Keep important supplies in the backpack suited to your journey.
-Tip: OdinHorse, OdinMounts, WolfPack, and Husky expand taming and traveling companions. Protect your animals before taking them into dangerous biomes.
-Tip: AAA Crafting improves crafting controls, while Recycle N Reclaim can recover configured materials from equipment you no longer need.
-Tip: ComfyAutoRepair repairs eligible gear when you use the appropriate crafting station.
-Tip: Press . to store your inventory into nearby containers with AzuAutoStore. Middle-click an item to store only that item. Hotbar items are protected by default.
-Tip: Trash Items gives you a deliberate way to destroy unwanted inventory. Double check an item before committing it to the trash.
-Tip: Build Camera Custom Hammers Edition gives you a better construction viewpoint. Check its keybind in your configuration before a large build.
-Tip: OdinsFoodBarrels and CookingAdditions expand food storage, preparation, and recipes. Revisit your kitchen after discovering new ingredients.
-Tip: MissingPieces, OdinsKingdom, and OdinBanners add many decorative and structural options for settlements, castles, and guild halls.
-Tip: AzuClock shows useful world time information, and HUDCompass keeps headings and nearby markers visible while traveling.
-Tip: AzuAreaRepair can repair nearby structures in batches. Use it carefully around large settlements to avoid unnecessary work.
-Tip: AutomaticFuel can feed supported fires and processing stations from nearby containers. Organize fuel storage close to the devices it serves.
-Tip: AirAnimals and SeaAnimals make the sky and ocean livelier. Some creatures are harmless scenery, while others deserve caution.
-Tip: Gizmo expands piece rotation beyond the normal axis. Small rotation adjustments can make curved roofs and detailed builds much easier.
-Tip: OdinShip adds new vessels, and NeedForSpeed expands ship speed control. Match your speed to the weather and nearby hazards.
-Tip: Max Dungeon Rooms allows larger generated dungeons. Bring extra food, rested time, and inventory space when exploring underground.
-Tip: Item Stand All Items lets many normally unsupported objects become decorations. Try unusual trophies and household items on stands.
-Tip: Venture Location Reset can refresh configured locations over time. Do not assume a previously cleared site will remain empty forever.
-Tip: BetterDiving expands underwater movement and exploration. Watch your stamina and plan a safe route back to the surface.
-Tip: Kill Me For My Power changes how forsaken powers can be acquired or managed. Boss rematches may be more rewarding than expected.
-Tip: CurrencyPocket keeps supported currency outside normal inventory clutter, leaving more room for loot and supplies.
-Tip: Venture Floating Items helps dropped items remain recoverable around water instead of disappearing beneath the surface.
-Tip: Chatter adds contextual messages and flavor from the world around you. Its frequency and presentation can be adjusted in configuration.
-Tip: XPortalNetworks provides selectable portal destinations, while Proper Portals applies the server's portal rules. Check access before relying on a route.
-Tip: Protective Wards adds configurable protection and permissions. Confirm trusted players have access before sealing a shared settlement.
-Tip: Shield Me Bruh expands shield behavior and progression. Review new shield options when your metal tier advances.
-Tip: Eternal Fire and Warm Torches reduce repetitive refueling for configured fires and keep carried torches useful in harsh weather.
-Tip: Explorer, Endurance, and Agility reward exploration, stamina activity, and movement. Regular travel develops more than the map.
-Tip: BetterCarts improves cart handling and usefulness. A repaired cart and a planned road still matter when hauling heavy loads.
-Tip: Unshamed changes configured death and skill loss behavior, but recovering your grave remains important for retrieving equipment.
-Tip: Jam expands uses for harvested fruit. BeeKeeper and Better Beehives make a well maintained apiary more useful to your kitchen.
-Tip: FloraCollector improves gathering from plants and the environment. Keep enough seeds and produce aside for cultivation and recipes.
-Tip: SeidrChest adds magical storage options. Treat special chests as infrastructure and place them where their abilities are useful.
-Tip: MagicBows and Javelins add new ranged weapon paths. Each has different timing and resource needs, so carry ammunition and a backup weapon.
-Tip: MagicRevamp adds spellbooks, staves, wands, armor, and a broad spell progression. Revisit its crafting station as you discover new materials.
-Tip: WackyEpicMMOSystem adds character progression and build choices, while EpicLoot adds magical equipment and enchanting. Plan them together.
-Tip: SleepSkip allows the configured share of resting players to advance the night, so every connected player may not need a bed.
-Tip: If interface bars extend beyond the screen, reduce Valheim's UI scale in the game settings or your mod manager configuration.
-Tip: You can turn off the startup cinematic under Settings, Game, then Skip intro cinematic.
+Tip: PlantEasily owns planting grids, crop snapping, bulk harvesting, and replanting. Farming still provides profession experience, crop growth, crop yield, and stamina benefits.
+Tip: PlantEverything expands what can be cultivated and controls crop growth information and biome rules.
+Tip: Each character may pursue two professions. Press F9 to open the Professions panel, and choose carefully because changing a profession has a 24 hour cooldown and resets its level.
+Tip: AzuCraftyBoxes lets nearby crafting stations use materials stored in containers, so organized workshops require less inventory shuffling.
+Tip: AAA Crafting improves recipe browsing and quantity controls. AAABuildMenu makes large build menus easier to search and organize.
+Tip: AzuExtendedPlayerInventory adds dedicated equipment and utility space. Keep equipped items in their intended slots so they remain easy to track.
+Tip: Backpacks provide portable storage and upgrade paths. PackHorse rewards traveling while heavily loaded.
+Tip: Press period to store your inventory into nearby containers with AzuAutoStore. Middle click an item to store only that item.
+Tip: CurrencyPocket keeps supported currency outside normal inventory clutter, leaving more room for equipment and supplies.
+Tip: ItemDrawers provide compact storage for bulk materials. Label and organize drawers before a workshop grows crowded.
+Tip: SeidrChest adds magical remote storage. Press H to open it and Left Alt plus K to bind a personal chest.
+Tip: Recycle N Reclaim can recover configured materials from unwanted equipment. Check the reclaim result before confirming it.
+Tip: RepairStation and AzuAreaRepair provide convenient ways to maintain equipment and nearby structures.
+Tip: PetPantry lets nearby tame creatures eat from supported storage. Keep their pantry stocked and protected.
+Tip: SleepSkip lets the configured share of resting players advance the night, so every connected player may not need a bed.
+Tip: AzuClock shows world time, and HUDCompass keeps headings and nearby markers visible. Press F11 to toggle the compass.
+Tip: Chatter adds contextual messages and flavor from the world around you.
+Tip: Boarders Bumper Blurbs adds useful travel messages when crossing between areas and destinations.
+Tip: First Person Mode can be toggled with Left Shift plus H when the server does not enforce a view.
+Tip: QuickTapDodge makes directional dodging more responsive. Practice away from cliffs before relying on it in combat.
+Tip: Weapon Holster Overhaul improves how equipped weapons are carried and displayed. Press the backquote key to quickly unequip your weapon.
+Tip: ItemCompare helps compare equipment while browsing inventories. Hover an item and use Z to view its comparison.
+Tip: TooltipExpansion reveals additional item information when more detail is useful.
+Tip: Epic Loot adds magical equipment and enchanting. Wacky Epic MMO System adds character progression and build choices, so plan the two systems together.
+Tip: Warfare adds weapons and combat progression. Revisit your forge whenever new metals and crafting upgrades become available.
+Tip: MagicPlugin adds spellbooks, staves, wands, armor, and magical progression. Revisit its crafting station as you discover new materials.
+Tip: MagicBows and Javelins provide distinct ranged weapon paths. Carry suitable ammunition and a dependable backup weapon.
+Tip: Dual Wield expands weapon combinations, while Evasion rewards well timed defensive movement.
+Tip: Passive Powers allows two forsaken powers to remain active. Use Right Alt plus a number key to activate an available power.
+Tip: Kill Me For My Power changes how forsaken powers are earned or managed. Boss rematches may provide additional opportunities.
+Tip: When you die, your items remain in your tombstone and you return as a wisp. Travel back to recover them, or a nearby group member can resurrect you at your body.
+Tip: Unshamed allows achievements to remain available while playing with the Ragnavik modpack.
+Tip: Darwin Awards shows the server death feed so the group can see when another Viking has fallen.
+Tip: Stamina Regeneration From Food, Steady Regeneration, and Starvation make food choices important beyond maximum health and stamina.
+Tip: ComfortTweaks expands the rested system. Press F4 to inspect nearby comfort sources when planning a home.
+Tip: Building, Blacksmithing, Cooking, Farming, Foraging, Lumberjacking, Mining, Ranching, Sailing, and Exploration improve through their related activities.
+Tip: SmartSkills directs gained experience toward the skills you actually use, while Professions determines which specialist skills can keep advancing.
+Tip: Aura rewards cooperation by sharing configured benefits with nearby allies.
+Tip: Groups and Guilds support organized play. Coordinate roles before long voyages, boss fights, and settlement projects.
+Tip: ServerCharacters keeps Ragnavik characters authoritative. Let synchronization finish before disconnecting or switching characters.
+Tip: World Advancement Progression uses personal and nearby player progress for bosses, raids, and world advancement.
+Tip: ZenRaids expands raid behavior. A prepared settlement needs protected work areas, clear exits, and supplies for recovery.
+Tip: HildirsQuest expands Hildir related progression and encounters. Prepare before pursuing unfamiliar objectives.
+Tip: TargetPortal lets you select portal destinations and view portal icons on the map with P.
+Tip: GracefulTeleportation improves portal travel presentation while preserving the server portal rules.
+Tip: Max Dungeon Rooms allows larger generated dungeons. Bring extra food, rested time, and inventory space underground.
+Tip: Venture Location Reset can refresh configured locations over time. A previously cleared site may not remain empty forever.
+Tip: OreMines adds progression based mining locations across multiple biomes. Enter with room for ore and a safe route home.
+Tip: Explorer rewards discovering the world. Regular travel can advance both your map knowledge and your character.
+Tip: Dive In expands underwater movement. Watch your stamina and plan a safe route back to the surface.
+Tip: OdinShip adds new vessels, while Ship Stats displays useful sailing information. Match your speed to weather and nearby hazards.
+Tip: Sailing improves through time at sea. Crew coordination matters when wind, enemies, and cargo all demand attention.
+Tip: AirAnimals and SeaAnimals make the sky and ocean livelier. Some creatures are scenery, while others deserve caution.
+Tip: OdinHorse, OdinMounts, OdinBear, WolfPack, GoodestBoy, and Ranching expand tame companions and animal progression.
+Tip: CraftyCarts provides mobile crafting and hauling options. Maintain carts and plan roads before moving heavy supplies.
+Tip: Build Camera provides a flexible construction viewpoint. GhostBuild, PerfectPlacement, and HearthBelow add specialized building controls.
+Tip: Press Left Control plus F6 to change PerfectPlacement alignment, and Left Control plus F8 to leave advanced editing mode.
+Tip: FineWoodPieces, MoreGatesExtended, OdinArchitect, OdinBanners, HedgeWalls, OdinsKingdom, OdinsUndercroft, OdinCampsite, and AllPlaceable expand settlement design.
+Tip: Item Stand All Items lets many normally unsupported objects become decorations. Experiment with trophies and household objects.
+Tip: OdinsTraps adds defensive tools for settlements and wilderness routes. Place traps where allies can recognize and avoid them.
+Tip: WardIsLove expands ward protection and permissions. Confirm trusted players have access before securing a shared settlement.
+Tip: CookingAdditions, Cooking, OdinsFoodBarrels, BottledNeck, PotionPlus, The Fisher, BeeKeeper, BeeQueen, and FloraCollector expand food and resource preparation.
+Tip: LootParticlePlus highlights nearby drops. Use Left Alt plus Q for its configured pickup action.
+Tip: LazyVikings reduces repetitive work for supported activities without replacing preparation or resource management.
+Tip: TrueInstantLootDrop makes defeated creatures release loot promptly, while LootParticlePlus helps make valuable drops visible.
+Tip: Warm Torches keeps carried torches useful in difficult weather.
+Tip: Sound of Silence and Shut Up reduce selected repetitive sounds so important audio cues are easier to notice.
+Tip: StartupAccelerator improves startup work behind the scenes. Allow the game to finish loading before interacting with menus.
+Tip: CatosAntiCheat protects the shared environment by checking required and permitted mods when players connect.
+Tip: Ragnavik UI provides the server entry flow, connection guidance, clock placement, and other interface adjustments.
+Tip: If interface elements extend beyond the screen, reduce Valheim's UI scale in the game settings.
