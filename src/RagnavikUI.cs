@@ -15,7 +15,7 @@ using UnityEngine.UI;
 
 namespace RagnavikUI;
 
-[BepInPlugin("lostkode.ragnavik.ui", "Ragnavik UI", "1.2.12")]
+[BepInPlugin("lostkode.ragnavik.ui", "Ragnavik UI", "1.2.13")]
 public sealed class RagnavikUIPlugin : BaseUnityPlugin
 {
     internal const string PluginGuid = "lostkode.ragnavik.ui";
