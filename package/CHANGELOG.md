@@ -2,6 +2,7 @@
 
 | Version | Changes |
 | --- | --- |
+| 1.2.12 | Resize connection dialogs to fit their message up to 90% of the screen, keep the action button fixed at the bottom, and show a scrollbar when more text is available. |
 | 1.2.11 | Replace the outdated RunicCharacterVault loading tip with guidance for turning off the startup cinematic from Valheim's Game settings. |
 | 1.2.10 | Keep connection guidance and its action button in separate groups so the button remains below the message instead of covering its text. |
 | 1.2.9 | Show specific connection guidance for Valheim version mismatches, mod and CatosAntiCheat rejections, server availability and timeouts, access rejections, and unknown failures. Keep retry instructions aligned with the Start Game button. |
