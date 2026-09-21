@@ -50,8 +50,8 @@ if {path.name for path in loading_images} != expected_images:
 tips_path = loading_dir / "tips.txt"
 if not tips_path.is_file():
     errors.append("package/loading/tips.txt is required")
-elif len([line for line in tips_path.read_text(encoding="utf-8").splitlines() if line.strip()]) != 44:
-    errors.append("package/loading/tips.txt must contain exactly 44 non-empty tips")
+elif len([line for line in tips_path.read_text(encoding="utf-8").splitlines() if line.strip()]) != 71:
+    errors.append("package/loading/tips.txt must contain exactly 71 non-empty tips")
 for path in required_files:
     if not path.is_file() or path.stat().st_size == 0:
         errors.append(f"required package asset missing or empty: {path.relative_to(root)}")
