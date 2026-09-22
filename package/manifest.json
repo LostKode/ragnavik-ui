@@ -1,6 +1,6 @@
 {
   "name": "Ragnavik_UI",
-  "version_number": "1.2.13",
+  "version_number": "1.2.14",
   "website_url": "https://ragnavik.vercel.app",
   "description": "A branded Ragnavik experience with custom menus, loading screens, updates, and character selection.",
   "dependencies": [
