@@ -1,6 +1,6 @@
-Tip: PlantEasily owns planting grids, crop snapping, bulk harvesting, and replanting. Farming still provides profession experience, crop growth, crop yield, and stamina benefits.
+Tip: PlantEasily owns planting grids, crop snapping, bulk harvesting, and replanting. Farming still provides profession experience, crop growth and crop yield bonuses. Cultivating uses normal stamina.
 Tip: PlantEverything expands what can be cultivated and controls crop growth information and biome rules.
-Tip: Each character may pursue two professions. Press F9 to open the Professions panel, and choose carefully because changing a profession has a 24 hour cooldown and resets its level.
+Tip: Each character may pursue two professions. Press F9 to open the Professions panel, and choose carefully because changing a profession has a 24 hour cooldown. Your earned profession levels are retained.
 Tip: AzuCraftyBoxes lets nearby crafting stations use materials stored in containers, so organized workshops require less inventory shuffling.
 Tip: AAA Crafting improves recipe browsing and quantity controls. AAABuildMenu makes large build menus easier to search and organize.
 Tip: AzuExtendedPlayerInventory adds dedicated equipment and utility space. Keep equipped items in their intended slots so they remain easy to track.
