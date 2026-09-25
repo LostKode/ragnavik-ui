@@ -1,6 +1,6 @@
 Tip: PlantEasily owns planting grids, crop snapping, bulk harvesting, and replanting. Farming still provides profession experience, crop growth and crop yield bonuses. Cultivating uses normal stamina.
 Tip: PlantEverything expands what can be cultivated and controls crop growth information and biome rules.
-Tip: Each character may pursue two professions. Press F9 to open the Professions panel, and choose carefully because changing a profession has a 24 hour cooldown. Your earned profession levels are retained.
+Tip: Each character may pursue two professions. Press F9 to open the Professions panel, and choose carefully because changing a profession has a 24 hour cooldown. Your earned profession levels are retained. Selected professions earn 100% skill XP; unselected professions earn 50%, with the same maximum level.
 Tip: AzuCraftyBoxes lets nearby crafting stations use materials stored in containers, so organized workshops require less inventory shuffling.
 Tip: AAA Crafting improves recipe browsing and quantity controls. AAABuildMenu makes large build menus easier to search and organize.
 Tip: AzuExtendedPlayerInventory adds dedicated equipment and utility space. Keep equipped items in their intended slots so they remain easy to track.
@@ -34,7 +34,7 @@ Tip: Darwin Awards shows the server death feed so the group can see when another
 Tip: Stamina Regeneration From Food, Steady Regeneration, and Starvation make food choices important beyond maximum health and stamina.
 Tip: ComfortTweaks expands the rested system. Press F4 to inspect nearby comfort sources when planning a home.
 Tip: Building, Blacksmithing, Cooking, Farming, Foraging, Lumberjacking, Mining, Ranching, Sailing, and Exploration improve through their related activities.
-Tip: SmartSkills directs gained experience toward the skills you actually use, while Professions determines which specialist skills can keep advancing.
+Tip: SmartSkills directs gained experience toward the skills you actually use, while selected professions earn full skill XP and unselected professions earn half.
 Tip: Aura rewards cooperation by sharing configured benefits with nearby allies.
 Tip: Groups and Guilds support organized play. Coordinate roles before long voyages, boss fights, and settlement projects.
 Tip: ServerCharacters keeps Ragnavik characters authoritative. Let synchronization finish before disconnecting or switching characters.
