@@ -2,6 +2,7 @@
 
 | Version | Changes |
 | --- | --- |
+| 1.2.16 | Unselected professions earn 50% skill XP; selected professions earn 100%. Keep normal maximum levels and unchanged character XP. Update profession guidance. |
 | 1.2.15 | Update farming and profession tips to match retained profession levels and normal cultivator stamina costs. |
 | 1.2.14 | Refresh Production connection metadata. |
 | 1.2.13 | Make Ragnavik UI the sole owner of loading tips. Replace stale mod references with current gameplay guidance and clarify wisp recovery, group resurrection, Unshamed achievements, and the Darwin Awards death feed. |
