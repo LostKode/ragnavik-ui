@@ -1,5 +1,6 @@
 using BepInEx;
 using BepInEx.Logging;
+using BepInEx.Bootstrap;
 using HarmonyLib;
 using System;
 using System.IO;
@@ -22,6 +23,7 @@ internal sealed class DirectEntryModule
     private readonly ManualLogSource log;
     private readonly DirectEntryTarget target;
     private string? catosRejection;
+    private bool maintenanceDisconnect;
     private FejdStartup? startup;
     private ZNet.ConnectionStatus lastFailureStatus;
 
@@ -38,6 +40,16 @@ internal sealed class DirectEntryModule
     {
         current = this;
         harmony.PatchAll(typeof(Patches));
+        if (Chainloader.PluginInfos.TryGetValue("org.bepinex.plugins.servercharacters", out var serverCharacters) &&
+            serverCharacters.Metadata.Version.ToString() == "1.4.17")
+        {
+            Type? client = serverCharacters.Instance.GetType().Assembly.GetType("ServerCharacters.ClientSide");
+            MethodInfo? receive = client?.GetMethod("onReceivedKickMessage", BindingFlags.NonPublic | BindingFlags.Static,
+                                                    null, new[] { typeof(ZRpc), typeof(string) }, null);
+            if (receive != null && receive.ReturnType == typeof(void))
+                harmony.Patch(receive, prefix: new HarmonyMethod(typeof(DirectEntryModule), nameof(CaptureMaintenanceKick)));
+            else log.LogWarning("Maintenance disconnect message adapter is unavailable; native error handling retained.");
+        }
         log.LogInfo($"Direct entry enabled for {target.DisplayName}. Target details are protected.");
     }
 
@@ -50,6 +62,7 @@ internal sealed class DirectEntryModule
     private void Prepare(FejdStartup startup)
     {
         catosRejection = null;
+        maintenanceDisconnect = false;
         if (target.IsTest)
         {
             Traverse.Create(startup).Field("m_queuedJoinServer").SetValue(null);
@@ -149,6 +162,12 @@ internal sealed class DirectEntryModule
         label.gameObject.SetActive(true);
     }
 
+    private static void CaptureMaintenanceKick(string __1)
+    {
+        if (current == null || current.target.IsTest) return;
+        current.maintenanceDisconnect = ConnectionFailureMessages.IsMaintenanceReason(__1);
+    }
+
     private void CaptureCatosRejection(string message)
     {
         if (target.IsTest || string.IsNullOrWhiteSpace(message)) return;
@@ -174,8 +193,8 @@ internal sealed class DirectEntryModule
 
     private void RenderFailure(FejdStartup startup, ZNet.ConnectionStatus status)
     {
-        string failureMessage = ConnectionFailureMessages.Format((int)status, catosRejection);
-        startup.m_connectionFailedError.text = $"Could not connect to {target.DisplayName}.\n\n{failureMessage}\n\nPlease retry by clicking {target.PlayLabel}.";
+        startup.m_connectionFailedError.text = ConnectionFailureMessages.Dialog((int)status, catosRejection,
+            maintenanceDisconnect, target.DisplayName, target.PlayLabel);
         EnsureConnectionFailureLayout(startup);
     }
 
@@ -361,7 +380,7 @@ internal sealed class DirectEntryModule
         [HarmonyPatch(typeof(FejdStartup), "OnCharacterStart"), HarmonyPostfix]
         private static void StartTestWorld(FejdStartup __instance) => current?.StartLocalTestWorld(__instance);
 
-        [HarmonyPatch(typeof(FejdStartup), "ShowConnectError"), HarmonyPostfix]
+        [HarmonyPatch(typeof(FejdStartup), "ShowConnectError"), HarmonyPostfix, HarmonyAfter("org.bepinex.plugins.servercharacters")]
         private static void RecoverConnectionFailure(FejdStartup __instance, ZNet.ConnectionStatus statusOverride) => current?.RecoverFromFailure(__instance, statusOverride);
 
         [HarmonyPatch(typeof(Chat), "RPC_ChatMessage"), HarmonyPrefix]

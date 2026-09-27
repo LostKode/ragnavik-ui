@@ -23,6 +23,19 @@ internal static class ConnectionFailureMessages
 {
     internal const string CatosRejectionPrefix = "Connection rejected:";
 
+    internal const string MaintenanceNotice = "Ragnavik has been taken offline for maintenance.\n\nPlease keep an eye on Discord for the announcement that the server is live again.";
+
+    internal static bool IsMaintenanceReason(string? message) =>
+        message != null && (message.StartsWith("[Ragnavik Maintenance]", StringComparison.Ordinal) ||
+        message == "Maintenance countdown finished. Please reconnect after the update.");
+
+    internal static string Dialog(int nativeStatus, string? catosRejection, bool maintenance,
+                                  string displayName, string playLabel)
+    {
+        if (maintenance && string.IsNullOrWhiteSpace(catosRejection)) return MaintenanceNotice;
+        return $"Could not connect to {displayName}.\n\n{Format(nativeStatus, catosRejection)}\n\nPlease retry by clicking {playLabel}.";
+    }
+
     internal static string Format(int nativeStatus, string? catosRejection)
     {
         if (!string.IsNullOrWhiteSpace(catosRejection))

@@ -15,3 +15,15 @@ ExpectContains("Catos category", ConnectionFailureMessages.Format(4, "Connection
 ExpectContains("Catos detail", ConnectionFailureMessages.Format(4, "Connection rejected: example.mod version mismatch"), "example.mod version mismatch");
 
 Console.WriteLine("Connection failure message tests passed.");
+
+ExpectContains("planned maintenance", ConnectionFailureMessages.Dialog(12, null, true, "Ragnavik", "Play"), "Discord");
+if (ConnectionFailureMessages.Dialog(12, null, true, "Ragnavik", "Play").Contains("Could not connect"))
+    throw new InvalidOperationException("Maintenance must not show the generic failure heading.");
+if (!ConnectionFailureMessages.IsMaintenanceReason("[Ragnavik Maintenance] Planned shutdown") ||
+    !ConnectionFailureMessages.IsMaintenanceReason("Maintenance countdown finished. Please reconnect after the update.") ||
+    ConnectionFailureMessages.IsMaintenanceReason("Authentication failed") ||
+    ConnectionFailureMessages.IsMaintenanceReason(null))
+    throw new InvalidOperationException("Maintenance reason classification failed.");
+ExpectContains("unplanned kick", ConnectionFailureMessages.Dialog(12, null, false, "Ragnavik", "Play"), "rejected");
+ExpectContains("Catos takes precedence", ConnectionFailureMessages.Dialog(12, "Connection rejected: wrong mod", true, "Ragnavik", "Play"), "wrong mod");
+Console.WriteLine("Maintenance disconnect message tests passed.");
