@@ -31,7 +31,7 @@ public sealed class RagnavikUIPlugin : BaseUnityPlugin
         catch (Exception error) { Logger.LogError($"Loading screen module disabled: {error}"); loadingScreens?.Stop(); }
         try { changelog = new ChangelogModule(this, Config, Logger); changelog.Start(); }
         catch (Exception error) { Logger.LogError($"Changelog module disabled: {error}"); changelog?.Stop(); }
-        try { directEntry = new DirectEntryModule(Logger); directEntry.Start(); }
+        try { directEntry = new DirectEntryModule(this, Config, Logger); directEntry.Start(); }
         catch (Exception error) { Logger.LogError($"Direct entry module disabled: {error.Message}"); directEntry?.Stop(); }
     }
     private void OnDestroy()

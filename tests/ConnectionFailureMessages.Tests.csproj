@@ -8,6 +8,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
+    <Compile Include="../src/ServerConnectionStatus.cs" Link="ServerConnectionStatus.cs" />
     <Compile Include="../src/ConnectionFailureMessages.cs" Link="ConnectionFailureMessages.cs" />
   </ItemGroup>
 </Project>
