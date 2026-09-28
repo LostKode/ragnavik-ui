@@ -1,4 +1,7 @@
 using BepInEx;
+using BepInEx.Configuration;
+using System.Collections;
+using UnityEngine.Networking;
 using BepInEx.Logging;
 using BepInEx.Bootstrap;
 using HarmonyLib;
@@ -22,14 +25,22 @@ internal sealed class DirectEntryModule
     private readonly Harmony harmony = new(RagnavikUIPlugin.PluginGuid + ".direct-entry");
     private readonly ManualLogSource log;
     private readonly DirectEntryTarget target;
+    private readonly BaseUnityPlugin plugin;
+    private readonly ConfigEntry<string> statusEndpoint;
+    private ServerConnectionStatus? serverStatus;
+    private int attempt;
+    private int statusRequest;
     private string? catosRejection;
     private bool maintenanceDisconnect;
     private FejdStartup? startup;
     private ZNet.ConnectionStatus lastFailureStatus;
 
-    internal DirectEntryModule(ManualLogSource log)
+    internal DirectEntryModule(BaseUnityPlugin plugin, ConfigFile config, ManualLogSource log)
     {
         this.log = log;
+        this.plugin = plugin;
+        statusEndpoint = config.Bind("Ragnavik Connection", "Status Endpoint", "",
+            "Public HTTPS connection-status endpoint. Leave empty until the status service is deployed. Never include credentials.");
         string pluginDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? Paths.PluginPath;
         target = DirectEntryTarget.Load(Path.Combine(pluginDirectory, "direct-entry.env"));
         if (RagnavikCharacterSelectionModule.ActiveEnvironment != target.Environment)
@@ -55,6 +66,7 @@ internal sealed class DirectEntryModule
 
     internal void Stop()
     {
+        attempt++;
         harmony.UnpatchSelf();
         if (ReferenceEquals(current, this)) current = null;
     }
@@ -62,6 +74,8 @@ internal sealed class DirectEntryModule
     private void Prepare(FejdStartup startup)
     {
         catosRejection = null;
+        serverStatus = null;
+        attempt++;
         maintenanceDisconnect = false;
         if (target.IsTest)
         {
@@ -70,6 +84,7 @@ internal sealed class DirectEntryModule
             return;
         }
 
+        plugin.StartCoroutine(FetchServerStatus(attempt));
         ServerJoinData joinData = new(new ServerJoinDataDedicated(target.Address, target.Port));
         Traverse.Create(startup).Field("m_queuedJoinServer").SetValue(joinData);
         log.LogInfo($"Prepared direct entry for {target.DisplayName} after character selection.");
@@ -188,14 +203,36 @@ internal sealed class DirectEntryModule
         startup.m_characterSelectScreen.SetActive(false);
         startup.m_mainMenu.SetActive(true);
         RenderFailure(startup, status);
+        plugin.StartCoroutine(FetchServerStatus(attempt));
         log.LogWarning($"Direct entry to {target.DisplayName} failed with {status}. Target details were not logged.");
     }
 
     private void RenderFailure(FejdStartup startup, ZNet.ConnectionStatus status)
     {
         startup.m_connectionFailedError.text = ConnectionFailureMessages.Dialog((int)status, catosRejection,
-            maintenanceDisconnect, target.DisplayName, target.PlayLabel);
+            maintenanceDisconnect, target.DisplayName, target.PlayLabel, serverStatus);
         EnsureConnectionFailureLayout(startup);
+    }
+
+    private IEnumerator FetchServerStatus(int requestAttempt)
+    {
+        if (!Uri.TryCreate(statusEndpoint.Value, UriKind.Absolute, out Uri endpoint) ||
+            endpoint.Scheme != Uri.UriSchemeHttps || !string.IsNullOrEmpty(endpoint.UserInfo)) yield break;
+        int requestId = ++statusRequest;
+        using UnityWebRequest request = UnityWebRequest.Get(endpoint.AbsoluteUri);
+        request.timeout = 5;
+        request.redirectLimit = 0;
+        yield return request.SendWebRequest();
+        if (requestId != statusRequest || requestAttempt != attempt || request.result != UnityWebRequest.Result.Success) yield break;
+        string body = request.downloadHandler.text;
+        if (body.Length > 4096) yield break;
+        ServerConnectionStatus? result = null;
+        try { result = JsonUtility.FromJson<ServerConnectionStatus>(body); }
+        catch (Exception) { log.LogWarning("Public connection status could not be read."); }
+        if (result == null || !result.IsFresh(DateTimeOffset.UtcNow)) yield break;
+        serverStatus = result;
+        if (startup != null && startup.m_connectionFailedPanel.activeSelf)
+            RenderFailure(startup, lastFailureStatus);
     }
 
     private static void EnsureConnectionFailureLayout(FejdStartup startup)
