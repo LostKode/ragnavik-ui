@@ -23,6 +23,19 @@ internal static class ConnectionFailureMessages
 {
     internal const string CatosRejectionPrefix = "Connection rejected:";
 
+    internal const string MaintenanceNotice = "Ragnavik has been taken offline for maintenance.\n\nPlease keep an eye on Discord for the announcement that the server is live again.";
+
+    internal static bool IsMaintenanceReason(string? message) =>
+        message != null && (message.StartsWith("[Ragnavik Maintenance]", StringComparison.Ordinal) ||
+        message == "Maintenance countdown finished. Please reconnect after the update.");
+
+    internal static string Dialog(int nativeStatus, string? catosRejection, bool maintenance,
+                                  string displayName, string playLabel, ServerConnectionStatus? server = null)
+    {
+        if (maintenance && string.IsNullOrWhiteSpace(catosRejection)) return MaintenanceNotice;
+        return $"Could not connect to {displayName}.\n\n{Format(nativeStatus, catosRejection, server)}\n\nPlease retry by clicking {playLabel}.";
+    }
+
     internal static string Format(int nativeStatus, string? catosRejection, ServerConnectionStatus? server = null)
     {
         // Availability guidance is relevant to transport and mod failures, not account errors.
@@ -35,10 +48,10 @@ internal static class ConnectionFailureMessages
                 context = $"Server-required Ragnavik client pack: {server.RequiredVersion}.\n\n";
             else if (server.LastVerifiedVersion != null)
                 context = $"Last verified Ragnavik client pack: {server.LastVerifiedVersion}. The current server requirement is not confirmed.\n\n";
-            if (server.state == "maintenance")
+            if (string.IsNullOrWhiteSpace(catosRejection) && server.state == "maintenance")
                 return "The Ragnavik server is undergoing maintenance.\n\n" + context +
                     "Wait for the server to return, then try again. A newly published client pack may be available before the server update is ready.";
-            if (server.state == "unavailable")
+            if (string.IsNullOrWhiteSpace(catosRejection) && server.state == "unavailable")
                 return "The Ragnavik server is not ready to accept connections.\n\n" + context +
                     "It may be starting, restarting, or recovering from a failed update. Wait for the server to return; reinstalling mods will not fix server downtime.";
         }

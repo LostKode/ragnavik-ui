@@ -42,3 +42,28 @@ status.lastVerifiedClientVersion = "1.1.60";
 status.state = "unavailable";
 ExpectContains("last verified version", ConnectionFailureMessages.Format(5, null, status), "Last verified Ragnavik client pack: 1.1.60");
 ExpectContains("last version is not current", ConnectionFailureMessages.Format(5, null, status), "current server requirement is not confirmed");
+
+ExpectContains("planned maintenance", ConnectionFailureMessages.Dialog(12, null, true, "Ragnavik", "Play"), "Discord");
+if (ConnectionFailureMessages.Dialog(12, null, true, "Ragnavik", "Play").Contains("Could not connect"))
+    throw new InvalidOperationException("Maintenance must not show the generic failure heading.");
+if (!ConnectionFailureMessages.IsMaintenanceReason("[Ragnavik Maintenance] Planned shutdown") ||
+    !ConnectionFailureMessages.IsMaintenanceReason("Maintenance countdown finished. Please reconnect after the update.") ||
+    ConnectionFailureMessages.IsMaintenanceReason("Authentication failed") ||
+    ConnectionFailureMessages.IsMaintenanceReason(null))
+    throw new InvalidOperationException("Maintenance reason classification failed.");
+ExpectContains("unplanned kick", ConnectionFailureMessages.Dialog(12, null, false, "Ragnavik", "Play"), "rejected");
+ExpectContains("Catos takes precedence", ConnectionFailureMessages.Dialog(12, "Connection rejected: wrong mod", true, "Ragnavik", "Play"), "wrong mod");
+Console.WriteLine("Maintenance disconnect message tests passed.");
+
+foreach (string availability in new[] { "maintenance", "unavailable" })
+{
+    status.state = availability;
+    ExpectContains("specific rejection survives status " + availability,
+        ConnectionFailureMessages.Dialog(4, "Connection rejected: missing example.mod", true, "Ragnavik", "Play", status),
+        "missing example.mod");
+}
+status.state = "online";
+status.requiredClientVersion = "1.1.60";
+ExpectContains("dialog includes server version",
+    ConnectionFailureMessages.Dialog(5, null, false, "Ragnavik", "Play", status), "Server-required Ragnavik client pack: 1.1.60");
+Console.WriteLine("Combined maintenance and status regression tests passed.");
